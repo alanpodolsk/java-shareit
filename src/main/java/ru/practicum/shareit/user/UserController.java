@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user;
 
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -9,28 +10,29 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(path = "/users")
+@AllArgsConstructor
 public class UserController {
 
-    UserService userService;
+    private UserService userService;
 
     @GetMapping("/{id}")
-    public UserDto getUser(@PathVariable Integer id){
+    public User getUser(@PathVariable Integer id){
     return userService.getUser(id);
     }
 
     @GetMapping
-    public List<UserDto> getAllUsers(){
+    public List<User> getAllUsers(){
        return userService.getAllUsers();
     }
 
-    @PatchMapping
-    public UserDto updateUser(User user){
-        return userService.updateUser(user);
+    @PatchMapping("/{id}")
+    public User updateUser(@RequestBody UserDto user, @PathVariable Integer id){
+        return userService.updateUser(user,id);
     }
 
     @PostMapping
-    public UserDto createUser(User user){
-        return userService.createUser(user);
+    public User createUser(@RequestBody UserDto user){
+        return userService.createUser(UserMapper.toUser(user));
     }
 
     @DeleteMapping ("/{id}")
