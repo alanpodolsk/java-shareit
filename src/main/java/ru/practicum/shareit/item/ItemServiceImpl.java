@@ -27,8 +27,7 @@ public class ItemServiceImpl implements ItemService {
             throw new NoObjectException("Пользователь отсутствует");
         }
         checkItem(item);
-        itemRepository.currentId++;
-        item.setId(itemRepository.currentId);
+        item.setId(itemRepository.getNewId());
         item.setOwner(userService.getUser(userId));
         itemRepository.items.put(item.getId(), item);
         return itemRepository.items.get(item.getId());
@@ -48,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
             throw new NoObjectException("ID пользователя не должен быть пустым");
         } else if (userService.getUser(userId) == null) {
             throw new NoObjectException("Пользователь отсутствует");
-        } else if (presentItem.getOwner().getId() != userId) {
+        } else if (!presentItem.getOwner().getId().equals(userId)) {
             throw new NoObjectException("Запрос на обновление может отправлять только пользователь");
         }
         //

@@ -33,8 +33,7 @@ public class UserServiceImpl implements UserService {
     public User createUser(User user) {
         if (user != null) {
             checkEmail(user.getEmail());
-            user.setId(UserRepository.currentId + 1);
-            UserRepository.currentId = user.getId();
+            user.setId(UserRepository.getNewId());
             UserRepository.users.put(user.getId(), user);
             UserRepository.uniqueEmails.add(user.getEmail());
             return UserRepository.users.get(user.getId());

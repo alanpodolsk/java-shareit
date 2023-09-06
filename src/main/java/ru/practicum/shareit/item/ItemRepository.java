@@ -8,5 +8,10 @@ import java.util.Map;
 @Component
 public class ItemRepository {
     static Map<Integer, Item> items = new HashMap<>();
-    static Integer currentId = 0;
+    private static Integer currentId = 0;
+
+    public static Integer getNewId() {
+        currentId++;
+        return currentId;
+    }
 }
