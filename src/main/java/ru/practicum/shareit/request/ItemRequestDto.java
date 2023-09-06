@@ -1,19 +1,21 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.User;
 
+import java.time.LocalDateTime;
+
 /**
- * TODO Sprint add-controllers.
+ * TODO Sprint add-item-requests.
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemDto {
-    String name;
+public class ItemRequestDto {
+    Integer id;
     String description;
-    Boolean available;
-    Integer requestId;
+    User requester;
+    LocalDateTime created;
 }

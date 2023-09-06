@@ -3,7 +3,7 @@ package ru.practicum.shareit.user;
 import java.util.List;
 
 public interface UserService {
-    User getUser(Integer Id);
+    User getUser(Integer id);
 
     List<User> getAllUsers();
 
