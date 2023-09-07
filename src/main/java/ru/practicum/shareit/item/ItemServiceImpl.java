@@ -4,8 +4,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NoObjectException;
 import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,44 +16,45 @@ import java.util.List;
 @Component
 @AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private UserService userService;
+    private UserRepository userRepository;
     private ItemRepository itemRepository;
 
     @Override
-    public Item createItem(Item item, Integer userId) {
-        if (item == null) {
+    public ItemDto createItem(ItemDto itemDto, Integer userId) {
+        if (itemDto == null) {
             throw new NoObjectException("Объект item не должен быть пустым");
         }
         if (userId == null) {
             throw new NoObjectException("ID пользователя не должен быть пустым");
-        } else if (userService.getUser(userId) == null) {
+        } else if (userRepository.getUser(userId) == null) {
             throw new NoObjectException("Пользователь отсутствует");
         }
+        Item item = ItemMapper.toItem(itemDto);
         checkItem(item);
-        item.setId(itemRepository.getNewId());
-        item.setOwner(userService.getUser(userId));
-        itemRepository.items.put(item.getId(), item);
-        return itemRepository.items.get(item.getId());
+        item.setOwner(userRepository.getUser(userId));
+        itemRepository.createItem(item);
+        return ItemMapper.toItemDto(itemRepository.getItem(item.getId()));
     }
 
     @Override
-    public Item updateItem(Item item, Integer userId, Integer itemId) {
+    public ItemDto updateItem(ItemDto itemDto, Integer userId, Integer itemId) {
         //проверка пользователя и добавляемого объекта
-        if (item == null) {
+        if (itemDto == null) {
             throw new NoObjectException("Объект item не должен быть пустым");
         }
-        Item presentItem = getItem(itemId);
+        Item presentItem = itemRepository.getItem(itemId);
         if (presentItem == null) {
             throw new NoObjectException("Такого предмета нет в системе");
         }
         if (userId == null) {
             throw new NoObjectException("ID пользователя не должен быть пустым");
-        } else if (userService.getUser(userId) == null) {
+        } else if (userRepository.getUser(userId) == null) {
             throw new NoObjectException("Пользователь отсутствует");
         } else if (!presentItem.getOwner().getId().equals(userId)) {
             throw new NoObjectException("Запрос на обновление может отправлять только пользователь");
         }
         //
+        Item item = ItemMapper.toItem(itemDto);
         if (item.getName() != null) {
             presentItem.setName(item.getName());
         }
@@ -60,41 +64,38 @@ public class ItemServiceImpl implements ItemService {
         if (item.getAvailable() != null) {
             presentItem.setAvailable(item.getAvailable());
         }
-        itemRepository.items.put(presentItem.getId(), presentItem);
-        return itemRepository.items.get(itemId);
+        return ItemMapper.toItemDto(itemRepository.updateItem(presentItem));
     }
 
     @Override
-    public Item getItem(Integer itemId) {
-        return itemRepository.items.get(itemId);
+    public ItemDto getItem(Integer itemId) {
+        Item item = itemRepository.getItem(itemId);
+        if (item != null) {
+            return ItemMapper.toItemDto(item);
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public List<Item> getItemsByUser(Integer userId) {
-        List<Item> items = new ArrayList<>();
-        User user = userService.getUser(userId);
-        if (user != null) {
-            for (Item item : itemRepository.items.values()) {
-                if (item.getOwner().equals(user)) {
-                    items.add(item);
-                }
-            }
+    public List<ItemDto> getItemsByUser(Integer userId) {
+        User user = userRepository.getUser(userId);
+        List<Item> items = itemRepository.getItemsByUser(user);
+        List<ItemDto> itemDtos = new ArrayList<>();
+        for (Item item : items) {
+            itemDtos.add(ItemMapper.toItemDto(item));
         }
-        return items;
+        return itemDtos;
     }
 
     @Override
-    public List<Item> getItemsBySearch(String text) {
-        List<Item> items = new ArrayList<>();
-        if (text.isBlank()) {
-            return items;
+    public List<ItemDto> getItemsBySearch(String text) {
+        List<Item> items = itemRepository.getItemsBySearch(text);
+        List<ItemDto> itemDtos = new ArrayList<>();
+        for (Item item : items) {
+            itemDtos.add(ItemMapper.toItemDto(item));
         }
-        for (Item item : itemRepository.items.values()) {
-            if (item.getAvailable() && (item.getName().toLowerCase().contains(text.toLowerCase()) || item.getDescription().toLowerCase().contains(text.toLowerCase()))) {
-                items.add(item);
-            }
-        }
-        return items;
+        return itemDtos;
     }
 
     private void checkItem(Item item) {
