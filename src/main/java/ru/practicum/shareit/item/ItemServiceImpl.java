@@ -7,8 +7,8 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserRepository;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.item.user.UserMemRepository;
+import ru.practicum.shareit.item.user.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
 @Component
 @AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private UserRepository userRepository;
+    private UserMemRepository userMemRepository;
     private ItemRepository itemRepository;
 
     @Override
@@ -26,12 +26,12 @@ public class ItemServiceImpl implements ItemService {
         }
         if (userId == null) {
             throw new NoObjectException("ID пользователя не должен быть пустым");
-        } else if (userRepository.getUser(userId) == null) {
+        } else if (userMemRepository.getUser(userId) == null) {
             throw new NoObjectException("Пользователь отсутствует");
         }
         Item item = ItemMapper.toItem(itemDto);
         checkItem(item);
-        item.setOwner(userRepository.getUser(userId));
+        item.setOwner(userMemRepository.getUser(userId));
         itemRepository.createItem(item);
         return ItemMapper.toItemDto(itemRepository.getItem(item.getId()));
     }
@@ -48,7 +48,7 @@ public class ItemServiceImpl implements ItemService {
         }
         if (userId == null) {
             throw new NoObjectException("ID пользователя не должен быть пустым");
-        } else if (userRepository.getUser(userId) == null) {
+        } else if (userMemRepository.getUser(userId) == null) {
             throw new NoObjectException("Пользователь отсутствует");
         } else if (!presentItem.getOwner().getId().equals(userId)) {
             throw new NoObjectException("Запрос на обновление может отправлять только пользователь");
@@ -79,7 +79,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getItemsByUser(Integer userId) {
-        User user = userRepository.getUser(userId);
+        User user = userMemRepository.getUser(userId);
         List<Item> items = itemRepository.getItemsByUser(user);
         List<ItemDto> itemDtos = new ArrayList<>();
         for (Item item : items) {

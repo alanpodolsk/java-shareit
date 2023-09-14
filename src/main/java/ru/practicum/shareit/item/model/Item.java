@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.item.user.model.User;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,4 +18,5 @@ public class Item {
     Boolean available;
     User owner;
     ItemRequest request;
+    List<Comment> comments;
 }
