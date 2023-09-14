@@ -1,14 +1,12 @@
-package ru.practicum.shareit.item.user;
+package ru.practicum.shareit.user;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.exception.ConflictException;
 import ru.practicum.shareit.exception.NoObjectException;
-import ru.practicum.shareit.item.user.dto.UserDto;
-import ru.practicum.shareit.item.user.model.User;
-import ru.practicum.shareit.item.user.model.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
