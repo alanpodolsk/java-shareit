@@ -96,7 +96,7 @@ public class ItemServiceImpl implements ItemService {
                 }
 
             }
-            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(itemId)));
+            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findAllByItemId(itemId)));
             return itemDtoWithBooking;
         } else {
             throw new NoObjectException("Объект не найден в системе");
@@ -117,7 +117,7 @@ public class ItemServiceImpl implements ItemService {
             if (nextBooking.isPresent()) {
                 itemDtoWithBooking.setNextBooking(BookingMapper.toBookingDtoForItemList(nextBooking.get()));
             }
-            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(item.getId())));
+            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findAllByItemId(item.getId())));
             itemDtos.add(itemDtoWithBooking);
         }
         return itemDtos;
