@@ -43,7 +43,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NoObjectException("Данного объекта нет в БД");
         } else if (itemOpt.get().getAvailable() == Boolean.FALSE) {
             throw new ValidationException("Объект недоступен для бронирования");
-        } else if (itemOpt.get().getOwner().getId() == userId) {
+        } else if (itemOpt.get().getOwner().getId().equals(userId)) {
             throw new NoObjectException("Это ваша собственная вещь");
         }
         Booking booking = BookingMapper.toBooking(bookingDto);
@@ -60,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
         if (bookingOpt.isPresent()) {
             Integer ownerId = bookingOpt.get().getItem().getOwner().getId();
             Integer bookerId = bookingOpt.get().getBooker().getId();
-            if (ownerId != userId && bookerId != userId) {
+            if (!ownerId.equals(userId) && !bookerId.equals(userId)) {
                 throw new NoObjectException("Недостаточно прав на просмотр данного бронирования");
             }
             return BookingMapper.toBookingDto(bookingOpt.get());
@@ -76,7 +76,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NoObjectException("Данное бронирование не найдено в системе");
         }
         Booking booking = bookingOpt.get();
-        if (booking.getItem().getOwner().getId() != userId) {
+        if (booking.getItem().getOwner().getId().equals(userId)) {
             throw new NoObjectException("Статус бронирования может изменять только собственник вещи");
         }
         if (booking.getStatus() != BookingStatus.WAITING) {

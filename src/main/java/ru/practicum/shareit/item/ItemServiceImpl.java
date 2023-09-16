@@ -85,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
         Optional<Item> itemOpt = itemRepository.findById(itemId);
         if (itemOpt.isPresent()) {
             ItemDtoWithBooking itemDtoWithBooking = ItemMapper.toItemDtoWithBooking(itemOpt.get());
-            if (userId == itemDtoWithBooking.getOwner().getId()) {
+            if (userId.equals(itemDtoWithBooking.getOwner().getId())) {
                 Optional<Booking> lastBooking = bookingRepository.findLastBooking(itemId);
                 Optional<Booking> nextBooking = bookingRepository.findNextBooking(itemId);
                 if (lastBooking.isPresent()) {
