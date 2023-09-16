@@ -43,11 +43,11 @@ public class BookingServiceImpl implements BookingService {
             throw new NoObjectException("Данного объекта нет в БД");
         } else if (itemOpt.get().getAvailable() == Boolean.FALSE) {
             throw new ValidationException("Объект недоступен для бронирования");
-        } else if (itemOpt.get().getOwner().getId() == userId){
+        } else if (itemOpt.get().getOwner().getId() == userId) {
             throw new NoObjectException("Это ваша собственная вещь");
         }
         Booking booking = BookingMapper.toBooking(bookingDto);
-        checkBookingDates(LocalDate.now().atStartOfDay(),booking);
+        checkBookingDates(LocalDate.now().atStartOfDay(), booking);
         booking.setItem(itemOpt.get());
         booking.setBooker(userOpt.get());
         booking.setStatus(BookingStatus.WAITING);
@@ -60,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
         if (bookingOpt.isPresent()) {
             Integer ownerId = bookingOpt.get().getItem().getOwner().getId();
             Integer bookerId = bookingOpt.get().getBooker().getId();
-            if (ownerId != userId && bookerId != userId){
+            if (ownerId != userId && bookerId != userId) {
                 throw new NoObjectException("Недостаточно прав на просмотр данного бронирования");
             }
             return BookingMapper.toBookingDto(bookingOpt.get());
@@ -79,7 +79,7 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getItem().getOwner().getId() != userId) {
             throw new NoObjectException("Статус бронирования может изменять только собственник вещи");
         }
-        if (booking.getStatus() != BookingStatus.WAITING){
+        if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ValidationException("Статус бронирования уже изменен");
         }
         if (approved == true) {
@@ -95,7 +95,7 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDto> getBookingsByUser(Integer userId, String state) {
         if (userId == null) {
             throw new NoObjectException("Не передан ID пользователя");
-        } else if (userRepository.findById(userId).isEmpty()){
+        } else if (userRepository.findById(userId).isEmpty()) {
             throw new NoObjectException("Указан некорректный пользователь");
         }
         switch (state) {
@@ -112,7 +112,7 @@ public class BookingServiceImpl implements BookingService {
             case "CURRENT":
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId, LocalDateTime.now(), LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
             default:
-                throw new RuntimeException("Unknown state: "+state);
+                throw new RuntimeException("Unknown state: " + state);
         }
     }
 
@@ -146,15 +146,15 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void checkBookingDates(LocalDateTime checkTime, Booking booking){
-        if(booking.getEnd() == null || booking.getStart() == null){
+    private void checkBookingDates(LocalDateTime checkTime, Booking booking) {
+        if (booking.getEnd() == null || booking.getStart() == null) {
             throw new ValidationException("Даты бронирования должны быть заполнены");
         }
-        if (booking.getStart().isBefore(checkTime) || booking.getEnd().isBefore(checkTime)){
+        if (booking.getStart().isBefore(checkTime) || booking.getEnd().isBefore(checkTime)) {
             throw new ValidationException("Даты бронирования должны быть позже, чем время проверки");
-        } else if ( booking.getStart().equals(booking.getEnd())){
-                throw new ValidationException(("Бронирование должно длиться хотя бы 1 секунду"));
-        } else if (booking.getEnd().isBefore(booking.getStart())){
+        } else if (booking.getStart().equals(booking.getEnd())) {
+            throw new ValidationException(("Бронирование должно длиться хотя бы 1 секунду"));
+        } else if (booking.getEnd().isBefore(booking.getStart())) {
             throw new ValidationException("Окончание бронирования должно быть позже старта бронирования");
         }
     }

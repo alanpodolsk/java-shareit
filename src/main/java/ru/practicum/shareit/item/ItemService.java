@@ -1,9 +1,10 @@
 package ru.practicum.shareit.item;
 
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.model.Comment;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.List;
 
 public interface ItemService {
@@ -16,4 +17,6 @@ public interface ItemService {
     List<ItemDtoWithBooking> getItemsByUser(Integer userId);
 
     List<ItemDto> getItemsBySearch(String text);
+
+    CommentDto createComment(Comment comment, Integer userId, Integer itemId);
 }

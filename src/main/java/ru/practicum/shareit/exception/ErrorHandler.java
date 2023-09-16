@@ -30,7 +30,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleRuntimeException(final RuntimeException e) {
-        return new ErrorResponse("Validation error", e.getMessage());
+        return new ErrorResponse("Runtime error", e.getMessage());
     }
 
 

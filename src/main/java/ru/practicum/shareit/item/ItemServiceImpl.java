@@ -5,13 +5,17 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.NoObjectException;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,6 +28,7 @@ public class ItemServiceImpl implements ItemService {
     private UserRepository userRepository;
     private ItemRepository itemRepository;
     private BookingRepository bookingRepository;
+    private CommentRepository commentRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Integer userId) {
@@ -80,16 +85,18 @@ public class ItemServiceImpl implements ItemService {
         Optional<Item> itemOpt = itemRepository.findById(itemId);
         if (itemOpt.isPresent()) {
             ItemDtoWithBooking itemDtoWithBooking = ItemMapper.toItemDtoWithBooking(itemOpt.get());
-            if (userId == itemDtoWithBooking.getOwner().getId()){
+            if (userId == itemDtoWithBooking.getOwner().getId()) {
                 Optional<Booking> lastBooking = bookingRepository.findLastBooking(itemId);
                 Optional<Booking> nextBooking = bookingRepository.findNextBooking(itemId);
-                if (lastBooking.isPresent()){
+                if (lastBooking.isPresent()) {
                     itemDtoWithBooking.setLastBooking(BookingMapper.toBookingDtoForItemList(lastBooking.get()));
                 }
-                if (nextBooking.isPresent()){
+                if (nextBooking.isPresent()) {
                     itemDtoWithBooking.setNextBooking(BookingMapper.toBookingDtoForItemList(nextBooking.get()));
                 }
+
             }
+            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(itemId)));
             return itemDtoWithBooking;
         } else {
             throw new NoObjectException("Объект не найден в системе");
@@ -104,12 +111,13 @@ public class ItemServiceImpl implements ItemService {
             Optional<Booking> lastBooking = bookingRepository.findLastBooking(item.getId());
             Optional<Booking> nextBooking = bookingRepository.findNextBooking(item.getId());
             ItemDtoWithBooking itemDtoWithBooking = ItemMapper.toItemDtoWithBooking(item);
-            if (lastBooking.isPresent()){
+            if (lastBooking.isPresent()) {
                 itemDtoWithBooking.setLastBooking(BookingMapper.toBookingDtoForItemList(lastBooking.get()));
             }
-            if (nextBooking.isPresent()){
+            if (nextBooking.isPresent()) {
                 itemDtoWithBooking.setNextBooking(BookingMapper.toBookingDtoForItemList(nextBooking.get()));
             }
+            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(item.getId())));
             itemDtos.add(itemDtoWithBooking);
         }
         return itemDtos;
@@ -117,7 +125,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getItemsBySearch(String text) {
-        if (text.isBlank()){
+        if (text.isBlank()) {
             return new ArrayList<ItemDto>();
         }
         List<Item> items = itemRepository.search(text);
@@ -126,6 +134,26 @@ public class ItemServiceImpl implements ItemService {
             itemDtos.add(ItemMapper.toItemDto(item));
         }
         return itemDtos;
+    }
+
+    @Override
+    public CommentDto createComment(Comment comment, Integer userId, Integer itemId) {
+        if (comment == null || comment.getText().isBlank()) {
+            throw new ValidationException("Комментарий не должен быть пустым");
+        }
+        Optional<Item> itemOpt = itemRepository.findById(itemId);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (itemOpt.isEmpty() || userOpt.isEmpty()) {
+            throw new NoObjectException("Проверьте корректность ID пользователя или предмета");
+        }
+        List<Booking> bookings = bookingRepository.findByBookerIdAndItemIdAndStatusAndStartIsBefore(userId, itemId, BookingStatus.APPROVED, LocalDateTime.now());
+        if (bookings.size() == 0) {
+            throw new ValidationException("Не найдено подходящее бронирование");
+        }
+        comment.setItem(itemOpt.get());
+        comment.setAuthor(userOpt.get());
+        comment.setCreated(LocalDateTime.now());
+        return ItemMapper.toCommentDto(commentRepository.save(comment));
     }
 
     private void checkItem(Item item) {
