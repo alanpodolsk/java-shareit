@@ -32,6 +32,4 @@ public class Item {
     @OneToOne
     @JoinColumn(name = "request_id")
     ItemRequest request;
-    @OneToMany
-    List<Comment> comments;
 }

@@ -2,13 +2,18 @@ package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.NoObjectException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +23,7 @@ import java.util.Optional;
 public class ItemServiceImpl implements ItemService {
     private UserRepository userRepository;
     private ItemRepository itemRepository;
+    private BookingRepository bookingRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Integer userId) {
@@ -70,21 +76,41 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItem(Integer itemId) {
+    public ItemDtoWithBooking getItem(Integer itemId, Integer userId) {
         Optional<Item> itemOpt = itemRepository.findById(itemId);
         if (itemOpt.isPresent()) {
-            return ItemMapper.toItemDto(itemOpt.get());
+            ItemDtoWithBooking itemDtoWithBooking = ItemMapper.toItemDtoWithBooking(itemOpt.get());
+            if (userId == itemDtoWithBooking.getOwner().getId()){
+                Optional<Booking> lastBooking = bookingRepository.findLastBooking(itemId);
+                Optional<Booking> nextBooking = bookingRepository.findNextBooking(itemId);
+                if (lastBooking.isPresent()){
+                    itemDtoWithBooking.setLastBooking(BookingMapper.toBookingDtoForItemList(lastBooking.get()));
+                }
+                if (nextBooking.isPresent()){
+                    itemDtoWithBooking.setNextBooking(BookingMapper.toBookingDtoForItemList(nextBooking.get()));
+                }
+            }
+            return itemDtoWithBooking;
         } else {
             throw new NoObjectException("Объект не найден в системе");
         }
     }
 
     @Override
-    public List<ItemDto> getItemsByUser(Integer userId) {
-        List<Item> items = itemRepository.findByOwnerId(userId);
-        List<ItemDto> itemDtos = new ArrayList<>();
+    public List<ItemDtoWithBooking> getItemsByUser(Integer userId) {
+        List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId);
+        List<ItemDtoWithBooking> itemDtos = new ArrayList<>();
         for (Item item : items) {
-            itemDtos.add(ItemMapper.toItemDto(item));
+            Optional<Booking> lastBooking = bookingRepository.findLastBooking(item.getId());
+            Optional<Booking> nextBooking = bookingRepository.findNextBooking(item.getId());
+            ItemDtoWithBooking itemDtoWithBooking = ItemMapper.toItemDtoWithBooking(item);
+            if (lastBooking.isPresent()){
+                itemDtoWithBooking.setLastBooking(BookingMapper.toBookingDtoForItemList(lastBooking.get()));
+            }
+            if (nextBooking.isPresent()){
+                itemDtoWithBooking.setNextBooking(BookingMapper.toBookingDtoForItemList(nextBooking.get()));
+            }
+            itemDtos.add(itemDtoWithBooking);
         }
         return itemDtos;
     }

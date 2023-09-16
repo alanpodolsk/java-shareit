@@ -16,6 +16,19 @@ public class ItemMapper {
         );
     }
 
+    public static ItemDtoWithBooking toItemDtoWithBooking(Item item) {
+        return new ItemDtoWithBooking(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                item.getOwner(),
+                item.getRequest(),
+                null,
+                null
+        );
+    }
+
 public static Item toItem(ItemDto itemDto) {
         return new Item(
                 itemDto.getId(),
@@ -23,8 +36,7 @@ public static Item toItem(ItemDto itemDto) {
                 itemDto.getDescription(),
                 itemDto.getAvailable(),
                 itemDto.getOwner(),
-                itemDto.getRequest(),
-                new ArrayList<>()
+                itemDto.getRequest()
         );
     }
 
