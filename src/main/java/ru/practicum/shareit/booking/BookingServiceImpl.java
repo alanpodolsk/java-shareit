@@ -76,7 +76,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NoObjectException("Данное бронирование не найдено в системе");
         }
         Booking booking = bookingOpt.get();
-        if (booking.getItem().getOwner().getId().equals(userId)) {
+        if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new NoObjectException("Статус бронирования может изменять только собственник вещи");
         }
         if (booking.getStatus() != BookingStatus.WAITING) {
