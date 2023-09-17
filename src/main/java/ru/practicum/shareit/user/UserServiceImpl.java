@@ -17,7 +17,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class UserServiceImpl implements UserService {
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public UserDto getUser(Integer id) {

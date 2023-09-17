@@ -24,6 +24,6 @@ public class ItemRequest {
     @ManyToOne
     @JoinColumn(name = "requester_id")
     User requester;
-    @Transient
+    @Column(nullable = false)
     LocalDateTime created;
 }

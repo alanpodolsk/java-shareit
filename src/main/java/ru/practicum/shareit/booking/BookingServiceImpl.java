@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoForCreate;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStateStatus;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.NoObjectException;
 import ru.practicum.shareit.exception.ValidationException;
@@ -25,9 +26,9 @@ import java.util.Optional;
 @AllArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
-    BookingRepository bookingRepository;
-    ItemRepository itemRepository;
-    UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
     @Override
     public BookingDto createBooking(BookingDtoForCreate bookingDto, Integer userId) {
@@ -98,21 +99,27 @@ public class BookingServiceImpl implements BookingService {
         } else if (userRepository.findById(userId).isEmpty()) {
             throw new NoObjectException("Указан некорректный пользователь");
         }
-        switch (state) {
-            case "ALL":
+        BookingStateStatus enumState;
+        try {
+            enumState = Enum.valueOf(BookingStateStatus.class,state);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown state: " + state);
+        }
+        switch (enumState) {
+            case ALL:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerId(userId, Sort.by(Sort.Direction.DESC, "start")));
-            case "WAITING":
+            case WAITING:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.WAITING, Sort.by(Sort.Direction.DESC, "start")));
-            case "REJECTED":
+            case REJECTED:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.REJECTED, Sort.by(Sort.Direction.DESC, "start")));
-            case "FUTURE":
+            case FUTURE:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
-            case "PAST":
+            case PAST:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
-            case "CURRENT":
+            case CURRENT:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId, LocalDateTime.now(), LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
             default:
-                throw new RuntimeException("Unknown state: " + state);
+                return null;
         }
     }
 
@@ -128,18 +135,24 @@ public class BookingServiceImpl implements BookingService {
         for (Item item : userItems) {
             itemIds.add(item.getId());
         }
-        switch (state) {
-            case "ALL":
+        BookingStateStatus enumState;
+        try {
+            enumState = Enum.valueOf(BookingStateStatus.class,state);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Unknown state: " + state);
+        }
+        switch (enumState) {
+            case ALL:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdIn(itemIds, Sort.by(Sort.Direction.DESC, "start")));
-            case "WAITING":
+            case WAITING:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStatus(itemIds, BookingStatus.WAITING, Sort.by(Sort.Direction.DESC, "start")));
-            case "REJECTED":
+            case REJECTED:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStatus(itemIds, BookingStatus.REJECTED, Sort.by(Sort.Direction.DESC, "start")));
-            case "FUTURE":
+            case FUTURE:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStartIsAfter(itemIds, LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
-            case "PAST":
+            case PAST:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndEndIsBefore(itemIds, LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
-            case "CURRENT":
+            case CURRENT:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStartIsBeforeAndEndIsAfter(itemIds, LocalDateTime.now(), LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start")));
             default:
                 throw new RuntimeException("Unknown state: " + state);

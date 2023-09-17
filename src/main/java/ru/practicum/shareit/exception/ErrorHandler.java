@@ -29,6 +29,12 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
+        return new ErrorResponse("IllegalArgumentException", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleRuntimeException(final RuntimeException e) {
         return new ErrorResponse("Runtime error", e.getMessage());
     }

@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UserController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/{id}")
     public UserDto getUser(@PathVariable Integer id) {

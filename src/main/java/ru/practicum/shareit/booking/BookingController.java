@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class BookingController {
 
-    BookingService bookingService;
+    private final BookingService bookingService;
 
     @PostMapping
     public BookingDto createBooking(@RequestBody BookingDtoForCreate bookingDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {

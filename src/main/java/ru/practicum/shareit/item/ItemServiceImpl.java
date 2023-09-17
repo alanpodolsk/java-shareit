@@ -25,10 +25,10 @@ import java.util.Optional;
 @Component
 @AllArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private UserRepository userRepository;
-    private ItemRepository itemRepository;
-    private BookingRepository bookingRepository;
-    private CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
+    private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Integer userId) {
@@ -96,7 +96,7 @@ public class ItemServiceImpl implements ItemService {
                 }
 
             }
-            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findAllByItemId(itemId)));
+            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(itemId)));
             return itemDtoWithBooking;
         } else {
             throw new NoObjectException("Объект не найден в системе");
@@ -117,7 +117,7 @@ public class ItemServiceImpl implements ItemService {
             if (nextBooking.isPresent()) {
                 itemDtoWithBooking.setNextBooking(BookingMapper.toBookingDtoForItemList(nextBooking.get()));
             }
-            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findAllByItemId(item.getId())));
+            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(item.getId())));
             itemDtos.add(itemDtoWithBooking);
         }
         return itemDtos;

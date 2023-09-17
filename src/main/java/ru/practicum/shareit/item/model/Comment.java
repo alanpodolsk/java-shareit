@@ -17,6 +17,7 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
+    @Column(nullable = false, length = 1000)
     String text;
     @ManyToOne
     @JoinColumn(name = "author_id")
@@ -24,5 +25,6 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "item_id")
     Item item;
+    @Column(nullable = false)
     LocalDateTime created;
 }
