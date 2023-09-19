@@ -7,39 +7,44 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemMapper {
-    public static ItemDto toItemDto(Item item) {
-        return new ItemDto(
+    public static InputItemDto toItemDto(Item item) {
+        return new InputItemDto(
                 item.getId(),
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
                 item.getOwner(),
-                item.getRequest()
+                null
         );
     }
 
-    public static ItemDtoWithBooking toItemDtoWithBooking(Item item) {
-        return new ItemDtoWithBooking(
+    public static OutputItemDto toOutputItemDto(Item item) {
+        Integer requestId = null;
+        if (item.getRequest() != null){
+            requestId = item.getRequest().getId();
+        }
+        return new OutputItemDto(
                 item.getId(),
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
                 item.getOwner(),
-                item.getRequest(),
+                requestId,
                 null,
                 null,
                 new ArrayList<>()
         );
     }
 
-    public static Item toItem(ItemDto itemDto) {
+    public static Item toItem(InputItemDto inputItemDto) {
         return new Item(
-                itemDto.getId(),
-                itemDto.getName(),
-                itemDto.getDescription(),
-                itemDto.getAvailable(),
-                itemDto.getOwner(),
-                itemDto.getRequest()
+                inputItemDto.getId(),
+                inputItemDto.getName(),
+                inputItemDto.getDescription(),
+                inputItemDto.getAvailable(),
+                inputItemDto.getOwner(),
+                null
+
         );
     }
 
@@ -58,6 +63,14 @@ public class ItemMapper {
             commentDtos.add(ItemMapper.toCommentDto(comment));
         }
         return commentDtos;
+    }
+
+    public static List<OutputItemDto> toOutputItemDtos(List<Item> items){
+        List<OutputItemDto> outputItemDtos = new ArrayList<>();
+        for (Item item: items){
+            outputItemDtos.add(ItemMapper.toOutputItemDto(item));
+        }
+        return outputItemDtos;
     }
 
 }

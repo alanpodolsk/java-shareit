@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -9,11 +10,13 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.NoObjectException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.InputItemDto;
+import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -29,10 +32,11 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
-    public ItemDto createItem(ItemDto itemDto, Integer userId) {
-        if (itemDto == null) {
+    public OutputItemDto createItem(InputItemDto inputItemDto, Integer userId) {
+        if (inputItemDto == null) {
             throw new NoObjectException("Объект item не должен быть пустым");
         }
         if (userId == null) {
@@ -40,18 +44,22 @@ public class ItemServiceImpl implements ItemService {
         } else if (userRepository.findById(userId).isEmpty()) {
             throw new NoObjectException("Пользователь отсутствует");
         }
-        Item item = ItemMapper.toItem(itemDto);
+        Item item = ItemMapper.toItem(inputItemDto);
         checkItem(item);
         item.setOwner(userRepository.findById(userId).get());
+        if (inputItemDto.getRequestId() != null){
+            Optional<ItemRequest> itemRequestOptional = itemRequestRepository.findById(inputItemDto.getRequestId());
+            itemRequestOptional.ifPresent(item::setRequest);
+        }
         itemRepository.save(item);
-        return ItemMapper.toItemDto(itemRepository.findById(item.getId()).get());
+        return ItemMapper.toOutputItemDto(itemRepository.findById(item.getId()).get());
     }
 
     @Override
-    public ItemDto updateItem(ItemDto itemDto, Integer userId, Integer itemId) {
+    public OutputItemDto updateItem(InputItemDto inputItemDto, Integer userId, Integer itemId) {
         //проверка пользователя и добавляемого объекта
         Item presentItem;
-        if (itemDto == null) {
+        if (inputItemDto == null) {
             throw new NoObjectException("Объект item не должен быть пустым");
         }
         Optional<Item> presentItemOpt = itemRepository.findById(itemId);
@@ -67,7 +75,7 @@ public class ItemServiceImpl implements ItemService {
             throw new NoObjectException("Запрос на обновление может отправлять только пользователь");
         }
         //
-        Item item = ItemMapper.toItem(itemDto);
+        Item item = ItemMapper.toItem(inputItemDto);
         if (item.getName() != null) {
             presentItem.setName(item.getName());
         }
@@ -77,61 +85,49 @@ public class ItemServiceImpl implements ItemService {
         if (item.getAvailable() != null) {
             presentItem.setAvailable(item.getAvailable());
         }
-        return ItemMapper.toItemDto(itemRepository.save(presentItem));
+        return ItemMapper.toOutputItemDto(itemRepository.save(presentItem));
     }
 
     @Override
-    public ItemDtoWithBooking getItem(Integer itemId, Integer userId) {
+    public OutputItemDto getItem(Integer itemId, Integer userId) {
         Optional<Item> itemOpt = itemRepository.findById(itemId);
         if (itemOpt.isPresent()) {
-            ItemDtoWithBooking itemDtoWithBooking = ItemMapper.toItemDtoWithBooking(itemOpt.get());
-            if (userId.equals(itemDtoWithBooking.getOwner().getId())) {
+            OutputItemDto outputItemDto = ItemMapper.toOutputItemDto(itemOpt.get());
+            if (userId.equals(outputItemDto.getOwner().getId())) {
                 Optional<Booking> lastBooking = bookingRepository.findLastBooking(itemId);
                 Optional<Booking> nextBooking = bookingRepository.findNextBooking(itemId);
-                if (lastBooking.isPresent()) {
-                    itemDtoWithBooking.setLastBooking(BookingMapper.toBookingDtoForItemList(lastBooking.get()));
-                }
-                if (nextBooking.isPresent()) {
-                    itemDtoWithBooking.setNextBooking(BookingMapper.toBookingDtoForItemList(nextBooking.get()));
-                }
+                lastBooking.ifPresent(booking -> outputItemDto.setLastBooking(BookingMapper.toBookingDtoForItemList(booking)));
+                nextBooking.ifPresent(booking -> outputItemDto.setNextBooking(BookingMapper.toBookingDtoForItemList(booking)));
 
             }
-            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(itemId)));
-            return itemDtoWithBooking;
+            outputItemDto.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(itemId)));
+            return outputItemDto;
         } else {
             throw new NoObjectException("Объект не найден в системе");
         }
     }
 
     @Override
-    public List<ItemDtoWithBooking> getItemsByUser(Integer userId) {
-        List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId);
-        List<ItemDtoWithBooking> itemDtos = new ArrayList<>();
+    public List<OutputItemDto> getItemsByUser(Integer userId, Integer start, Integer size) {
+        List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(userId, PageRequest.of(start, size)).getContent();
+        List<OutputItemDto> itemDtos = new ArrayList<>();
         for (Item item : items) {
-            Optional<Booking> lastBooking = bookingRepository.findLastBooking(item.getId());
-            Optional<Booking> nextBooking = bookingRepository.findNextBooking(item.getId());
-            ItemDtoWithBooking itemDtoWithBooking = ItemMapper.toItemDtoWithBooking(item);
-            if (lastBooking.isPresent()) {
-                itemDtoWithBooking.setLastBooking(BookingMapper.toBookingDtoForItemList(lastBooking.get()));
-            }
-            if (nextBooking.isPresent()) {
-                itemDtoWithBooking.setNextBooking(BookingMapper.toBookingDtoForItemList(nextBooking.get()));
-            }
-            itemDtoWithBooking.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(item.getId())));
-            itemDtos.add(itemDtoWithBooking);
+            OutputItemDto outputItemDto = ItemMapper.toOutputItemDto(item);
+            itemDtos.add(itemEnrichment(outputItemDto,true));
         }
         return itemDtos;
     }
 
     @Override
-    public List<ItemDto> getItemsBySearch(String text) {
+    public List<OutputItemDto> getItemsBySearch(String text, Integer start, Integer size) {
         if (text.isBlank()) {
-            return new ArrayList<ItemDto>();
+            return new ArrayList<>();
         }
-        List<Item> items = itemRepository.search(text);
-        List<ItemDto> itemDtos = new ArrayList<>();
+        List<Item> items = itemRepository.search(text, PageRequest.of(start, size)).getContent();
+        List<OutputItemDto> itemDtos = new ArrayList<>();
         for (Item item : items) {
-            itemDtos.add(ItemMapper.toItemDto(item));
+            OutputItemDto outputItemDto = ItemMapper.toOutputItemDto(item);
+            itemDtos.add(itemEnrichment(outputItemDto, false));
         }
         return itemDtos;
     }
@@ -167,4 +163,16 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("Доступность предмета должна быть указана");
         }
     }
+
+    private OutputItemDto itemEnrichment(OutputItemDto outputItemDto, boolean isOwner){
+        if(isOwner){
+            Optional<Booking> lastBooking = bookingRepository.findLastBooking(outputItemDto.getId());
+            Optional<Booking> nextBooking = bookingRepository.findNextBooking(outputItemDto.getId());
+            lastBooking.ifPresent(booking -> outputItemDto.setLastBooking(BookingMapper.toBookingDtoForItemList(booking)));
+            nextBooking.ifPresent(booking -> outputItemDto.setNextBooking(BookingMapper.toBookingDtoForItemList(booking)));
+        }
+        outputItemDto.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(outputItemDto.getId())));
+        return outputItemDto;
+    }
+
 }

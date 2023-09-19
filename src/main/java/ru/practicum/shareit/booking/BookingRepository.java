@@ -1,5 +1,7 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,27 +13,26 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
-    List<Booking> findByBookerId(Integer bookerId, Sort sort);
+    Page<Booking> findByBookerId(Integer bookerId, Pageable pageable);
 
     List<Booking> findByBookerIdAndItemIdAndStatusAndStartIsBefore(Integer bookerId, Integer itemId, BookingStatus status, LocalDateTime checkTime);
+    Page<Booking> findByBookerIdAndStatus(Integer bookerId, BookingStatus status, Pageable pageable);
 
-    List<Booking> findByBookerIdAndStatus(Integer bookerId, BookingStatus status, Sort sort);
+    Page<Booking> findByBookerIdAndStartIsAfter(Integer bookerId, LocalDateTime start, Pageable pageable);
 
-    List<Booking> findByBookerIdAndStartIsAfter(Integer bookerId, LocalDateTime start, Sort sort);
+    Page<Booking> findByBookerIdAndEndIsBefore(Integer bookerId, LocalDateTime end, Pageable pageable);
 
-    List<Booking> findByBookerIdAndEndIsBefore(Integer bookerId, LocalDateTime end, Sort sort);
+    Page<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfter(Integer bookerId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
-    List<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfter(Integer bookerId, LocalDateTime start, LocalDateTime end, Sort sort);
+    Page<Booking> findByItemIdIn(List<Integer> itemIds, Pageable pageable);
 
-    List<Booking> findByItemIdIn(List<Integer> itemIds, Sort start);
+    Page<Booking> findByItemIdInAndStatus(List<Integer> itemIds, BookingStatus status, Pageable pageable);
 
-    List<Booking> findByItemIdInAndStatus(List<Integer> itemIds, BookingStatus status, Sort sort);
+    Page<Booking> findByItemIdInAndStartIsAfter(List<Integer> itemIds, LocalDateTime start, Pageable pageable);
 
-    List<Booking> findByItemIdInAndStartIsAfter(List<Integer> itemIds, LocalDateTime start, Sort sort);
+    Page<Booking> findByItemIdInAndEndIsBefore(List<Integer> itemIds, LocalDateTime start, Pageable pageable);
 
-    List<Booking> findByItemIdInAndEndIsBefore(List<Integer> itemIds, LocalDateTime start, Sort sort);
-
-    List<Booking> findByItemIdInAndStartIsBeforeAndEndIsAfter(List<Integer> itemIds, LocalDateTime start, LocalDateTime end, Sort sort);
+    Page<Booking> findByItemIdInAndStartIsBeforeAndEndIsAfter(List<Integer> itemIds, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     @Query(value = "select * from bookings where item_id = ?1 AND status != 'REJECTED' AND start_date = (SELECT MAX(start_date) from bookings where item_id = ?1 AND start_date < now())", nativeQuery = true)
     Optional<Booking> findLastBooking(Integer itemId);

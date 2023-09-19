@@ -6,11 +6,9 @@ import lombok.NoArgsConstructor;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,6 +18,8 @@ public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
+    @NotBlank
+    @Column(nullable = false, length = 1000)
     String description;
     @ManyToOne
     @JoinColumn(name = "requester_id")
