@@ -12,7 +12,7 @@ public class ItemRequestsMapper {
                 itemRequest.getDescription(),
                 itemRequest.getRequester(),
                 itemRequest.getCreated(),
-                null
+                new ArrayList<>()
         );
     }
 
