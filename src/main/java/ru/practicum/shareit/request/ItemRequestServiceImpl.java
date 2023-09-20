@@ -60,6 +60,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getAllRequests(Integer from, Integer size, Integer userId) {
+        if(size < 1 || from < 0) {
+            throw new ValidationException("Некорректные параметры пагинации");
+        }
         List<ItemRequestDto> itemRequestDtos;
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterIdNot(userId, PageRequest.of(from, size)).getContent();
         itemRequestDtos = new ArrayList<>();

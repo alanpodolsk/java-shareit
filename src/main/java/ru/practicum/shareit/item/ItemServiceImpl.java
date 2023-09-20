@@ -51,8 +51,7 @@ public class ItemServiceImpl implements ItemService {
             Optional<ItemRequest> itemRequestOptional = itemRequestRepository.findById(inputItemDto.getRequestId());
             itemRequestOptional.ifPresent(item::setRequest);
         }
-        itemRepository.save(item);
-        return ItemMapper.toOutputItemDto(itemRepository.findById(item.getId()).get());
+        return ItemMapper.toOutputItemDto(itemRepository.save(item));
     }
 
     @Override
