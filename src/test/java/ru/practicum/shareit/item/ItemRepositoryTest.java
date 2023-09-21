@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -16,7 +15,6 @@ import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ItemRepositoryTest {
@@ -32,7 +30,7 @@ class ItemRepositoryTest {
     @DisplayName("Должен вернуть предметы 1 и 3 - hammer")
     void shouldReturnItems1And3Hammer() {
         //Arrange
-        User user1 = new User(null,"Вася","vasya@mail.ru");
+        User user1 = new User(null, "Вася", "vasya@mail.ru");
 
         user1 = userRepository.save(user1);
 
@@ -53,7 +51,7 @@ class ItemRepositoryTest {
         Item savedItem3 = itemRepository.save(item3);
 
         //Act
-        List<Item> items = itemRepository.search("Hammer", PageRequest.of(0,50)).getContent();
+        List<Item> items = itemRepository.search("Hammer", PageRequest.of(0, 50)).getContent();
         //Assert
         Assertions.assertTrue(items.size() == 2);
         Assertions.assertEquals(savedItem1.getId(), items.get(0).getId());
@@ -64,7 +62,7 @@ class ItemRepositoryTest {
     @DisplayName("Должен не вернуть ничего - нет совпадений")
     void shouldReturnNoneItemsNoMatches() {
         //Arrange
-        User user1 = new User(null,"Вася","vasya@mail.ru");
+        User user1 = new User(null, "Вася", "vasya@mail.ru");
 
         user1 = userRepository.save(user1);
 
@@ -85,7 +83,7 @@ class ItemRepositoryTest {
         Item savedItem3 = itemRepository.save(item3);
 
         //Act
-        List<Item> items = itemRepository.search("Beretta", PageRequest.of(0,50)).getContent();
+        List<Item> items = itemRepository.search("Beretta", PageRequest.of(0, 50)).getContent();
         //Assert
         Assertions.assertTrue(items.size() == 0);
     }

@@ -7,12 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.NoObjectException;
-import ru.practicum.shareit.item.CommentRepository;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.ItemServiceImpl;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
@@ -28,7 +24,7 @@ class ItemRequestServiceImplTest {
     ItemRepository mockItemRepository = Mockito.mock(ItemRepository.class);
     UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
     ItemRequestRepository mockItemRequestRepository = Mockito.mock(ItemRequestRepository.class);
-    ItemRequestServiceImpl itemRequestService = new ItemRequestServiceImpl(mockItemRequestRepository,mockUserRepository,mockItemRepository);
+    ItemRequestServiceImpl itemRequestService = new ItemRequestServiceImpl(mockItemRequestRepository, mockUserRepository, mockItemRepository);
 
 
     @Test
@@ -46,11 +42,11 @@ class ItemRequestServiceImplTest {
         Mockito.when(mockItemRequestRepository.save(Mockito.any(ItemRequest.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, ItemRequest.class));
         //Act
-        ItemRequestDto savedRequestDto = itemRequestService.createRequest(requestDto,1);
+        ItemRequestDto savedRequestDto = itemRequestService.createRequest(requestDto, 1);
         Assertions.assertNotNull(savedRequestDto);
         Assertions.assertAll(
-                ()-> assertEquals(user,savedRequestDto.getRequester()),
-                ()-> assertNotNull(savedRequestDto.getCreated()));
+                () -> assertEquals(user, savedRequestDto.getRequester()),
+                () -> assertNotNull(savedRequestDto.getCreated()));
     }
 
     @Test
@@ -68,7 +64,7 @@ class ItemRequestServiceImplTest {
         //Act
         NoObjectException ex = assertThrows(
                 NoObjectException.class,
-                ()-> itemRequestService.createRequest(requestDto,100)
+                () -> itemRequestService.createRequest(requestDto, 100)
         );
         Assertions.assertEquals("Данный пользователь отсутствует в системе", ex.getMessage());
     }
@@ -84,11 +80,11 @@ class ItemRequestServiceImplTest {
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(user));
         Mockito.when(mockItemRequestRepository.findByRequesterId(Mockito.anyInt()))
-                .thenReturn(List.of(requestDto1,requestDto2));
+                .thenReturn(List.of(requestDto1, requestDto2));
         //Act
         List<ItemRequestDto> savedRequests = itemRequestService.getRequestsByUser(1);
         //Assert
-        Assertions.assertEquals(2,savedRequests.size());
+        Assertions.assertEquals(2, savedRequests.size());
     }
 
     @Test
@@ -100,12 +96,12 @@ class ItemRequestServiceImplTest {
         user.setId(1);
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(user));
-        Mockito.when(mockItemRequestRepository.findAllByRequesterIdNot(Mockito.anyInt(),Mockito.any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(requestDto1,requestDto2)));
+        Mockito.when(mockItemRequestRepository.findAllByRequesterIdNot(Mockito.anyInt(), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(requestDto1, requestDto2)));
         //
-        List<ItemRequestDto> savedRequests = itemRequestService.getAllRequests(0,50,50);
+        List<ItemRequestDto> savedRequests = itemRequestService.getAllRequests(0, 50, 50);
         //Assert
-        Assertions.assertEquals(2,savedRequests.size());
+        Assertions.assertEquals(2, savedRequests.size());
     }
 
     @Test
@@ -118,6 +114,6 @@ class ItemRequestServiceImplTest {
         Mockito.when(mockItemRequestRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(requestDto));
         //Assert
-        Assertions.assertNotNull(itemRequestService.getRequest(1,1));
+        Assertions.assertNotNull(itemRequestService.getRequest(1, 1));
     }
 }

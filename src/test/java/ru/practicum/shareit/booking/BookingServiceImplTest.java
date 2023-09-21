@@ -54,8 +54,8 @@ class BookingServiceImplTest {
         //Assert
         Assertions.assertNotNull(savedBooking);
         Assertions.assertAll(
-                ()-> assertEquals(user,savedBooking.getBooker()),
-                ()-> assertEquals(item,savedBooking.getItem()));
+                () -> assertEquals(user, savedBooking.getBooker()),
+                () -> assertEquals(item, savedBooking.getItem()));
     }
 
     @Test
@@ -70,7 +70,7 @@ class BookingServiceImplTest {
         Mockito.when(mockBookingRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(booking));
         //Act
-        Assertions.assertNotNull(bookingService.getBooking(7,1));
+        Assertions.assertNotNull(bookingService.getBooking(7, 1));
     }
 
 
@@ -92,7 +92,7 @@ class BookingServiceImplTest {
         Mockito.when(mockBookingRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(booking));
         //Act
-        Assertions.assertNotNull(bookingService.getBooking(7,1));
+        Assertions.assertNotNull(bookingService.getBooking(7, 1));
     }
 
     @Test
@@ -109,7 +109,7 @@ class BookingServiceImplTest {
         //Act
         NoObjectException ex = assertThrows(
                 NoObjectException.class,
-                ()-> bookingService.getBooking(7,4)
+                () -> bookingService.getBooking(7, 4)
         );
         Assertions.assertEquals("Недостаточно прав на просмотр данного бронирования", ex.getMessage());
     }
@@ -135,10 +135,10 @@ class BookingServiceImplTest {
         Mockito.when(mockBookingRepository.save(Mockito.any(Booking.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Booking.class));
         //Act
-        BookingDto patchedBooking = bookingService.setBookingStatus(3,true,4);
+        BookingDto patchedBooking = bookingService.setBookingStatus(3, true, 4);
         //Assert
         Assertions.assertNotNull(patchedBooking);
-        assertEquals(BookingStatus.APPROVED,patchedBooking.getStatus());
+        assertEquals(BookingStatus.APPROVED, patchedBooking.getStatus());
     }
 
     @Test
@@ -162,10 +162,10 @@ class BookingServiceImplTest {
         Mockito.when(mockBookingRepository.save(Mockito.any(Booking.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Booking.class));
         //Act
-        BookingDto patchedBooking = bookingService.setBookingStatus(3,false,4);
+        BookingDto patchedBooking = bookingService.setBookingStatus(3, false, 4);
         //Assert
         Assertions.assertNotNull(patchedBooking);
-        assertEquals(BookingStatus.REJECTED,patchedBooking.getStatus());
+        assertEquals(BookingStatus.REJECTED, patchedBooking.getStatus());
     }
 
     @Test
@@ -179,28 +179,28 @@ class BookingServiceImplTest {
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(user));
         Mockito.when(mockBookingRepository.findByBookerId(Mockito.anyInt(), Mockito.any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(booking1,booking2)));
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
         //Act
-        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUser(5,"ALL",0,50);
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUser(5, "ALL", 0, 50);
         //Assert
-        Assertions.assertEquals(savedBookingDtos.size(),List.of(booking1,booking2).size());
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
     }
 
-        @Test
-        @DisplayName("Должен вернуть перечень бронирований владельца вещи")
-        void shouldGetBookingsByItemsOwner() {
-            //Arrange
-            User user = generator.nextObject(User.class);
-            user.setId(5);
-            Booking booking1 = generator.nextObject(Booking.class);
-            Booking booking2 = generator.nextObject(Booking.class);
-            Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
-                    .thenReturn(Optional.of(user));
-            Mockito.when(mockBookingRepository.findByItemIdIn(Mockito.anyList(), Mockito.any(Pageable.class)))
-                    .thenReturn(new PageImpl<>(List.of(booking1,booking2)));
-            //Act
-            List<BookingDto> savedBookingDtos = bookingService.getBookingsByUsersItems(5,"ALL",0,50);
-            //Assert
-            Assertions.assertEquals(savedBookingDtos.size(),List.of(booking1,booking2).size());
-        }
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи")
+    void shouldGetBookingsByItemsOwner() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByItemIdIn(Mockito.anyList(), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUsersItems(5, "ALL", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
 }

@@ -8,7 +8,6 @@ import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.booking.dto.BookingDtoForCreate;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -21,7 +20,6 @@ import ru.practicum.shareit.request.ItemRequestRepository;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
-import java.awt.print.Book;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +33,7 @@ class ItemServiceImplTest {
     BookingRepository mockBookingRepository = Mockito.mock(BookingRepository.class);
     CommentRepository mockCommentRepository = Mockito.mock(CommentRepository.class);
     ItemRequestRepository mockItemRequestRepository = Mockito.mock(ItemRequestRepository.class);
-    ItemServiceImpl itemService = new ItemServiceImpl(mockUserRepository,mockItemRepository,mockBookingRepository,mockCommentRepository, mockItemRequestRepository);
+    ItemServiceImpl itemService = new ItemServiceImpl(mockUserRepository, mockItemRepository, mockBookingRepository, mockCommentRepository, mockItemRequestRepository);
 
 
     @Test
@@ -58,10 +56,10 @@ class ItemServiceImplTest {
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
 
         //Act
-        OutputItemDto savedItemDto = itemService.createItem(inputItem,1);
+        OutputItemDto savedItemDto = itemService.createItem(inputItem, 1);
         //Assert
         Assertions.assertNotNull(savedItemDto);
-        assertEquals(user,savedItemDto.getOwner());
+        assertEquals(user, savedItemDto.getOwner());
     }
 
     @Test
@@ -85,13 +83,13 @@ class ItemServiceImplTest {
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
 
         //Act
-        OutputItemDto savedItemDto = itemService.updateItem(inputItem,1,1);
+        OutputItemDto savedItemDto = itemService.updateItem(inputItem, 1, 1);
         //Assert
         Assertions.assertNotNull(savedItemDto);
         Assertions.assertAll(
-                ()-> assertEquals(inputItem.getName(),savedItemDto.getName()),
-                ()-> assertEquals(inputItem.getDescription(),savedItemDto.getDescription()),
-                ()-> assertEquals(inputItem.getAvailable(),savedItemDto.getAvailable()));
+                () -> assertEquals(inputItem.getName(), savedItemDto.getName()),
+                () -> assertEquals(inputItem.getDescription(), savedItemDto.getDescription()),
+                () -> assertEquals(inputItem.getAvailable(), savedItemDto.getAvailable()));
     }
 
     @Test
@@ -116,12 +114,12 @@ class ItemServiceImplTest {
         Mockito.when(mockBookingRepository.findNextBooking(Mockito.anyInt()))
                 .thenReturn(Optional.of(nextBooking));
         //Act
-        OutputItemDto savedItemDto = itemService.getItem(7,3);
+        OutputItemDto savedItemDto = itemService.getItem(7, 3);
         //Assert
         Assertions.assertNotNull(savedItemDto);
         Assertions.assertAll(
-                ()-> assertNull(savedItemDto.getLastBooking()),
-                ()-> assertNull(savedItemDto.getNextBooking()));
+                () -> assertNull(savedItemDto.getLastBooking()),
+                () -> assertNull(savedItemDto.getNextBooking()));
     }
 
     @Test
@@ -146,12 +144,12 @@ class ItemServiceImplTest {
         Mockito.when(mockBookingRepository.findNextBooking(Mockito.anyInt()))
                 .thenReturn(Optional.of(nextBooking));
         //Act
-        OutputItemDto savedItemDto = itemService.getItem(7,1);
+        OutputItemDto savedItemDto = itemService.getItem(7, 1);
         //Assert
         Assertions.assertNotNull(savedItemDto);
         Assertions.assertAll(
-                ()-> assertEquals(savedItemDto.getLastBooking(), BookingMapper.toBookingDtoForItemList(lastBooking)),
-                ()-> assertEquals(savedItemDto.getNextBooking(), BookingMapper.toBookingDtoForItemList(nextBooking)));
+                () -> assertEquals(savedItemDto.getLastBooking(), BookingMapper.toBookingDtoForItemList(lastBooking)),
+                () -> assertEquals(savedItemDto.getNextBooking(), BookingMapper.toBookingDtoForItemList(nextBooking)));
     }
 
     @Test
@@ -163,12 +161,12 @@ class ItemServiceImplTest {
         user.setId(1);
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(user));
-        Mockito.when(mockItemRepository.findByOwnerIdOrderByIdAsc(Mockito.anyInt(),Mockito.any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(item1,item2)));
+        Mockito.when(mockItemRepository.findByOwnerIdOrderByIdAsc(Mockito.anyInt(), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(item1, item2)));
         //Act
-        List<OutputItemDto> savedItems = itemService.getItemsByUser(1,0,50);
+        List<OutputItemDto> savedItems = itemService.getItemsByUser(1, 0, 50);
         //Assert
-        Assertions.assertEquals(savedItems.size(),List.of(item1,item2).size());
+        Assertions.assertEquals(savedItems.size(), List.of(item1, item2).size());
     }
 
     @Test
@@ -180,12 +178,12 @@ class ItemServiceImplTest {
         user.setId(1);
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(user));
-        Mockito.when(mockItemRepository.search(Mockito.anyString(),Mockito.any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(item1,item2)));
+        Mockito.when(mockItemRepository.search(Mockito.anyString(), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(item1, item2)));
         //Act
-        List<OutputItemDto> savedItems = itemService.getItemsBySearch("any",0,50);
+        List<OutputItemDto> savedItems = itemService.getItemsBySearch("any", 0, 50);
         //Assert
-        Assertions.assertEquals(savedItems.size(),List.of(item1,item2).size());
+        Assertions.assertEquals(savedItems.size(), List.of(item1, item2).size());
     }
 
     @Test
@@ -197,12 +195,12 @@ class ItemServiceImplTest {
         user.setId(1);
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(user));
-        Mockito.when(mockItemRepository.search(Mockito.anyString(),Mockito.any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(item1,item2)));
+        Mockito.when(mockItemRepository.search(Mockito.anyString(), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(item1, item2)));
         //Act
-        List<OutputItemDto> savedItems = itemService.getItemsBySearch("",0,50);
+        List<OutputItemDto> savedItems = itemService.getItemsBySearch("", 0, 50);
         //Assert
-        Assertions.assertEquals(savedItems.size(),0);
+        Assertions.assertEquals(savedItems.size(), 0);
     }
 
     @Test
@@ -221,14 +219,14 @@ class ItemServiceImplTest {
                 .thenReturn(Optional.of(item));
         Mockito.when(mockCommentRepository.save(Mockito.any(Comment.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Comment.class));
-        Mockito.when(mockBookingRepository.findByBookerIdAndItemIdAndStatusAndStartIsBefore(Mockito.anyInt(),Mockito.anyInt(), Mockito.any(BookingStatus.class),Mockito.any(LocalDateTime.class)))
+        Mockito.when(mockBookingRepository.findByBookerIdAndItemIdAndStatusAndStartIsBefore(Mockito.anyInt(), Mockito.anyInt(), Mockito.any(BookingStatus.class), Mockito.any(LocalDateTime.class)))
                 .thenReturn(List.of(booking));
         //Act
-        CommentDto savedComment = itemService.createComment(comment,1,1);
+        CommentDto savedComment = itemService.createComment(comment, 1, 1);
         //Assert
         Assertions.assertNotNull(savedComment);
         Assertions.assertAll(
-                ()-> assertEquals(savedComment.getAuthorName(), user.getName()),
-                ()-> assertEquals(savedComment.getItem(), item));
+                () -> assertEquals(savedComment.getAuthorName(), user.getName()),
+                () -> assertEquals(savedComment.getItem(), item));
     }
 }

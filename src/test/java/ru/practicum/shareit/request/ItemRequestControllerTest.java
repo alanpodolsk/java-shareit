@@ -64,7 +64,7 @@ class ItemRequestControllerTest {
         requestDto1.setItems(List.of(item1, item2));
         requestDto2.setItems(List.of(item1, item2));
         when(itemRequestService.getRequestsByUser(Mockito.anyInt()))
-                .thenReturn(List.of(requestDto1,requestDto2));
+                .thenReturn(List.of(requestDto1, requestDto2));
         mvc.perform(get("/requests")
                         .header("X-Sharer-User-Id", 1)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -108,8 +108,8 @@ class ItemRequestControllerTest {
         OutputItemDto item2 = generator.nextObject(OutputItemDto.class);
         requestDto1.setItems(List.of(item1, item2));
         requestDto2.setItems(List.of(item1, item2));
-        when(itemRequestService.getAllRequests(Mockito.anyInt(),Mockito.anyInt(),Mockito.anyInt()))
-                .thenReturn(List.of(requestDto1,requestDto2));
+        when(itemRequestService.getAllRequests(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(List.of(requestDto1, requestDto2));
         mvc.perform(get("/requests/all")
                         .header("X-Sharer-User-Id", 1)
                         .characterEncoding(StandardCharsets.UTF_8)

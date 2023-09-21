@@ -4,18 +4,12 @@ import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.booking.BookingService;
-import ru.practicum.shareit.booking.BookingServiceImpl;
-import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class UserServiceImplTest {
     EasyRandom generator = new EasyRandom();
@@ -39,11 +33,11 @@ class UserServiceImplTest {
         User user1 = generator.nextObject(User.class);
         User user2 = generator.nextObject(User.class);
         Mockito.when(mockUserRepository.findAll())
-                .thenReturn(List.of(user1,user2));
+                .thenReturn(List.of(user1, user2));
         //Act
         List<UserDto> users = userService.getAllUsers();
         //Assert
-        Assertions.assertEquals(users.size(),2);
+        Assertions.assertEquals(users.size(), 2);
     }
 
     @Test
@@ -74,6 +68,6 @@ class UserServiceImplTest {
         Mockito.when(mockUserRepository.save(Mockito.any(User.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, User.class));
         //Assert
-        Assertions.assertNotNull(userService.updateUser(userDto,1));
+        Assertions.assertNotNull(userService.updateUser(userDto, 1));
     }
 }
