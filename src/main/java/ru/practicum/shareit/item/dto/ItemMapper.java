@@ -7,16 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemMapper {
-    public static InputItemDto toItemDto(Item item) {
-        return new InputItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getOwner(),
-                null
-        );
-    }
+
 
     public static OutputItemDto toOutputItemDto(Item item) {
         Integer requestId = null;

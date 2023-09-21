@@ -539,7 +539,7 @@ class BookingServiceImplTest {
                 .thenReturn(Optional.of(user));
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
-                () -> bookingService.getBookingsByUsersItems(1, "INCORRECT_STATE", 0, 50)
+                () -> bookingService.getBookingsByUser(1, "INCORRECT_STATE", 0, 50)
         );
         Assertions.assertEquals("Unknown state: INCORRECT_STATE", ex.getMessage());
     }
@@ -666,5 +666,87 @@ class BookingServiceImplTest {
                 () -> bookingService.getBookingsByUsersItems(1, "INCORRECT_STATE", 0, 50)
         );
         Assertions.assertEquals("Unknown state: INCORRECT_STATE", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - Ошибка пагинации")
+    void shouldReturnPaginationErrorsGetBookingsByItemsOwner() {
+        //Arrange
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.getBookingsByUsersItems(1, "INCORRECT_STATE", -1, 50)
+        );
+        Assertions.assertEquals("Некорректные параметры пагинации", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований пользователя - Ошибка пагинации")
+    void shouldReturnPaginationErrorsGetBookingsByUser() {
+        //Arrange
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.getBookingsByUser(1, "INCORRECT_STATE", -1, 50)
+        );
+        Assertions.assertEquals("Некорректные параметры пагинации", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - Ошибка пустого пользователя")
+    void shouldReturnNoUserIdGetBookingsByItemsOwner() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.getBookingsByUsersItems(null, "ALL", 0, 50)
+        );
+        Assertions.assertEquals("Не передан ID пользователя", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - Ошибка пустого пользователя")
+    void shouldReturnNoUserIdGetBookingsByUser() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.getBookingsByUser(null, "ALL", 0, 50)
+        );
+        Assertions.assertEquals("Не передан ID пользователя", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - Ошибка некорректного пользователя")
+    void shouldReturnUserNotFoundGetBookingsByItemsOwner() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.getBookingsByUsersItems(2, "ALL", 0, 50)
+        );
+        Assertions.assertEquals("Указан некорректный пользователь", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - Ошибка некорректного пользователя")
+    void shouldReturnUserNotFoundGetBookingsByUser() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.getBookingsByUser(2, "ALL", 0, 50)
+        );
+        Assertions.assertEquals("Указан некорректный пользователь", ex.getMessage());
     }
 }

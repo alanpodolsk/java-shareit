@@ -162,7 +162,7 @@ public class BookingServiceImpl implements BookingService {
             case CURRENT:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStartIsBeforeAndEndIsAfter(itemIds, LocalDateTime.now(), LocalDateTime.now(), PageRequest.of(start > 0 ? start / size : 0, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             default:
-                throw new RuntimeException("Unknown state: " + state);
+                return null;
         }
     }
 
