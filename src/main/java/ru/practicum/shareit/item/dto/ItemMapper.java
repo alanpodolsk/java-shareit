@@ -20,7 +20,7 @@ public class ItemMapper {
 
     public static OutputItemDto toOutputItemDto(Item item) {
         Integer requestId = null;
-        if (item.getRequest() != null){
+        if (item.getRequest() != null) {
             requestId = item.getRequest().getId();
         }
         return new OutputItemDto(
@@ -65,9 +65,9 @@ public class ItemMapper {
         return commentDtos;
     }
 
-    public static List<OutputItemDto> toOutputItemDtos(List<Item> items){
+    public static List<OutputItemDto> toOutputItemDtos(List<Item> items) {
         List<OutputItemDto> outputItemDtos = new ArrayList<>();
-        for (Item item: items){
+        for (Item item : items) {
             outputItemDtos.add(ItemMapper.toOutputItemDto(item));
         }
         return outputItemDtos;

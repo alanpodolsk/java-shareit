@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
@@ -16,6 +15,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     Page<Booking> findByBookerId(Integer bookerId, Pageable pageable);
 
     List<Booking> findByBookerIdAndItemIdAndStatusAndStartIsBefore(Integer bookerId, Integer itemId, BookingStatus status, LocalDateTime checkTime);
+
     Page<Booking> findByBookerIdAndStatus(Integer bookerId, BookingStatus status, Pageable pageable);
 
     Page<Booking> findByBookerIdAndStartIsAfter(Integer bookerId, LocalDateTime start, Pageable pageable);

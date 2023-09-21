@@ -60,7 +60,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getAllRequests(Integer from, Integer size, Integer userId) {
-        if(size < 1 || from < 0) {
+        if (size < 1 || from < 0) {
             throw new ValidationException("Некорректные параметры пагинации");
         }
         List<ItemRequestDto> itemRequestDtos;
@@ -76,7 +76,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto getRequest(Integer itemId, Integer userId) {
-        if(userRepository.findById(userId).isEmpty()){
+        if (userRepository.findById(userId).isEmpty()) {
             throw new NoObjectException("Пользователь отсутствует в системе");
         }
         Optional<ItemRequest> requestOptional = itemRequestRepository.findById(itemId);

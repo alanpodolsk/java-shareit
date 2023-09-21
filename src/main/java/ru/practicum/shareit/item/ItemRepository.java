@@ -10,7 +10,9 @@ import java.util.List;
 
 public interface ItemRepository extends JpaRepository<Item, Integer> {
     Page<Item> findByOwnerIdOrderByIdAsc(Integer ownerId, Pageable pageable);
+
     List<Item> findByOwnerIdOrderByIdAsc(Integer ownerId);
+
     List<Item> findByRequestId(Integer requestId);
 
     @Query(" select i from Item i " +

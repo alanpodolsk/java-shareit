@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.DisplayName;
@@ -9,16 +8,21 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
+import ru.practicum.shareit.exception.ConflictException;
+import ru.practicum.shareit.exception.NoObjectException;
+import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.InputItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.OutputItemDto;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -39,7 +43,7 @@ class ItemControllerTest {
     private final EasyRandom generator = new EasyRandom();
 
     @Test
-    @DisplayName("Должен создать пользователя")
+    @DisplayName("Должен создать вещь")
     void shouldCreateItem() throws Exception {
         User user = generator.nextObject(User.class);
         user.setId(1);
@@ -66,10 +70,91 @@ class ItemControllerTest {
     }
 
     @Test
-    void createComment() {
+    @DisplayName("Должен вернуть тестовую ошибку Bad Request")
+    void createItemShouldReturnBadRequest() throws Exception {
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        InputItemDto item = generator.nextObject(InputItemDto.class);
+        when(itemService.createItem(Mockito.any(InputItemDto.class),Mockito.anyInt()))
+                .thenThrow(new ValidationException("Тестовая ошибка"));
+        mvc.perform(post("/items")
+                        .content(mapper.writeValueAsString(item))
+                        .header("X-Sharer-User-Id",1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorType", is("Validation error")))
+                .andExpect(jsonPath("$.error", is("Тестовая ошибка")));
     }
 
     @Test
+    @DisplayName("Должен вернуть тестовую ошибку Not Found")
+    void createItemShouldReturnNotFound() throws Exception {
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        InputItemDto item = generator.nextObject(InputItemDto.class);
+        when(itemService.createItem(Mockito.any(InputItemDto.class),Mockito.anyInt()))
+                .thenThrow(new NoObjectException("Тестовая ошибка"));
+        mvc.perform(post("/items")
+                        .content(mapper.writeValueAsString(item))
+                        .header("X-Sharer-User-Id",1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.errorType", is("Object not found")))
+                .andExpect(jsonPath("$.error", is("Тестовая ошибка")));
+    }
+
+    @Test
+    @DisplayName("Должен вернуть тестовую ошибку Conflict")
+    void createItemShouldReturnConflict() throws Exception {
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        InputItemDto item = generator.nextObject(InputItemDto.class);
+        when(itemService.createItem(Mockito.any(InputItemDto.class),Mockito.anyInt()))
+                .thenThrow(new ConflictException("Тестовая ошибка"));
+        mvc.perform(post("/items")
+                        .content(mapper.writeValueAsString(item))
+                        .header("X-Sharer-User-Id",1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.errorType", is("Conflict error")))
+                .andExpect(jsonPath("$.error", is("Тестовая ошибка")));
+    }
+
+    @Test
+    @DisplayName("Должен создать комментарий")
+    void createComment() throws Exception {
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        Item item = generator.nextObject(Item.class);
+        Comment comment = generator.nextObject(Comment.class);
+        when(itemService.createComment(Mockito.any(Comment.class),Mockito.anyInt(),Mockito.anyInt()))
+                .thenAnswer(invocationOnMock -> {
+                    CommentDto commentDto = ItemMapper.toCommentDto(invocationOnMock.getArgument(0, Comment.class));
+                    commentDto.setAuthorName(user.getName());
+                    commentDto.setItem(item);
+                    return commentDto;
+                });
+        mvc.perform(post("/items/1/comment")
+                        .content(mapper.writeValueAsString(comment))
+                        .header("X-Sharer-User-Id",1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(comment.getId()), Integer.class))
+                .andExpect(jsonPath("$.text", is(comment.getText())))
+                .andExpect(jsonPath("$.item.id").value(item.getId()))
+                .andExpect(jsonPath("$.authorName").value(user.getName()));
+    }
+
+    @Test
+    @DisplayName("Должен обновить вещь")
     void shouldUpdateItem() throws Exception {
         User user = generator.nextObject(User.class);
         user.setId(1);
@@ -96,6 +181,7 @@ class ItemControllerTest {
     }
 
     @Test
+    @DisplayName("Должен вернуть вещь по id")
     void shouldGetItem() throws Exception {
         User user = generator.nextObject(User.class);
         user.setId(1);
@@ -117,10 +203,63 @@ class ItemControllerTest {
     }
 
     @Test
-    void getItemsByUser() {
+    @DisplayName("Должен вернуть вещи пользователя")
+    void getItemsByUser() throws Exception {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        OutputItemDto item1 = generator.nextObject(OutputItemDto.class);
+        OutputItemDto item2 = generator.nextObject(OutputItemDto.class);
+        item1.setOwner(user);
+        item2.setOwner(user);
+        when(itemService.getItemsByUser(Mockito.anyInt(),Mockito.anyInt(),Mockito.anyInt()))
+                .thenReturn(List.of(item1,item2));
+        //Act
+        mvc.perform(get("/items")
+                        .header("X-Sharer-User-Id",1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+        //Assert
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(item1.getId())))
+                .andExpect(jsonPath("$[0].name", is(item1.getName())))
+                .andExpect(jsonPath("$[0].description").value(item1.getDescription()))
+                .andExpect(jsonPath("$[0].available").value(item1.getAvailable()))
+                .andExpect(jsonPath("$[0].owner").value(user))
+                .andExpect(jsonPath("$[1].id", is(item2.getId())))
+                .andExpect(jsonPath("$[1].name", is(item2.getName())))
+                .andExpect(jsonPath("$[1].description").value(item2.getDescription()))
+                .andExpect(jsonPath("$[1].available").value(item2.getAvailable()))
+                .andExpect(jsonPath("$[1].owner").value(user));
     }
 
     @Test
-    void getItemsBySearch() {
+    @DisplayName("Должен вернуть вещи по поиску")
+    void getItemsBySearch() throws Exception {
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        OutputItemDto item1 = generator.nextObject(OutputItemDto.class);
+        OutputItemDto item2 = generator.nextObject(OutputItemDto.class);
+        item1.setOwner(user);
+        item2.setOwner(user);
+        when(itemService.getItemsBySearch(Mockito.anyString(),Mockito.anyInt(),Mockito.anyInt()))
+                .thenReturn(List.of(item1,item2));
+        mvc.perform(get("/items/search?text=дРелЬ")
+                        .header("X-Sharer-User-Id",3)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is(item1.getId())))
+                .andExpect(jsonPath("$[0].name", is(item1.getName())))
+                .andExpect(jsonPath("$[0].description").value(item1.getDescription()))
+                .andExpect(jsonPath("$[0].available").value(item1.getAvailable()))
+                .andExpect(jsonPath("$[0].owner").value(user))
+                .andExpect(jsonPath("$[1].id", is(item2.getId())))
+                .andExpect(jsonPath("$[1].name", is(item2.getName())))
+                .andExpect(jsonPath("$[1].description").value(item2.getDescription()))
+                .andExpect(jsonPath("$[1].available").value(item2.getAvailable()))
+                .andExpect(jsonPath("$[1].owner").value(user));
     }
 }

@@ -7,7 +7,8 @@ import ru.practicum.shareit.request.model.ItemRequest;
 
 import java.util.List;
 
-public interface ItemRequestRepository extends JpaRepository<ItemRequest,Integer> {
+public interface ItemRequestRepository extends JpaRepository<ItemRequest, Integer> {
     List<ItemRequest> findByRequesterId(Integer requesterId);
+
     Page<ItemRequest> findAllByRequesterIdNot(Integer requesterId, Pageable pageable);
 }

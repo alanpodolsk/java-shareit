@@ -47,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = ItemMapper.toItem(inputItemDto);
         checkItem(item);
         item.setOwner(userRepository.findById(userId).get());
-        if (inputItemDto.getRequestId() != null){
+        if (inputItemDto.getRequestId() != null) {
             Optional<ItemRequest> itemRequestOptional = itemRequestRepository.findById(inputItemDto.getRequestId());
             itemRequestOptional.ifPresent(item::setRequest);
         }
@@ -112,7 +112,7 @@ public class ItemServiceImpl implements ItemService {
         List<OutputItemDto> itemDtos = new ArrayList<>();
         for (Item item : items) {
             OutputItemDto outputItemDto = ItemMapper.toOutputItemDto(item);
-            itemDtos.add(itemEnrichment(outputItemDto,true));
+            itemDtos.add(itemEnrichment(outputItemDto, true));
         }
         return itemDtos;
     }
@@ -163,8 +163,8 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private OutputItemDto itemEnrichment(OutputItemDto outputItemDto, boolean isOwner){
-        if(isOwner){
+    private OutputItemDto itemEnrichment(OutputItemDto outputItemDto, boolean isOwner) {
+        if (isOwner) {
             Optional<Booking> lastBooking = bookingRepository.findLastBooking(outputItemDto.getId());
             Optional<Booking> nextBooking = bookingRepository.findNextBooking(outputItemDto.getId());
             lastBooking.ifPresent(booking -> outputItemDto.setLastBooking(BookingMapper.toBookingDtoForItemList(booking)));
