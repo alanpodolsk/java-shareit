@@ -11,6 +11,8 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.exception.NoObjectException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.InputItemDto;
 import ru.practicum.shareit.item.dto.OutputItemDto;
@@ -21,6 +23,7 @@ import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +66,161 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Создание Item - ошибка отсутствия пользователя")
+    void shouldReturnNoObjectExceptionUserIsNull() {
+        //Arrange
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setName(inputItem.getName());
+        outputItem.setDescription(inputItem.getDescription());
+        outputItem.setAvailable(inputItem.getAvailable());
+        outputItem.setId(1);
+
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.createItem(inputItem, 4)
+        );
+        Assertions.assertEquals("Пользователь отсутствует", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Создание Item - ошибка пустого ID пользователя")
+    void shouldReturnNoObjectExceptionUserIdIsNull() {
+        //Arrange
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setName(inputItem.getName());
+        outputItem.setDescription(inputItem.getDescription());
+        outputItem.setAvailable(inputItem.getAvailable());
+        outputItem.setId(1);
+
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.createItem(inputItem, null)
+        );
+        Assertions.assertEquals("ID пользователя не должен быть пустым", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Создание Item - ошибка пустого объекта Item")
+    void shouldReturnNoObjectExceptionItemIsNull() {
+        //Arrange
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setName(inputItem.getName());
+        outputItem.setDescription(inputItem.getDescription());
+        outputItem.setAvailable(inputItem.getAvailable());
+        outputItem.setId(1);
+
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.createItem(null, 4)
+        );
+        Assertions.assertEquals("Объект item не должен быть пустым", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Создание Item - ошибка пустого Item.name")
+    void shouldReturnValidationExceptionCreateItemWithNullName() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        inputItem.setName("");
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setName(inputItem.getName());
+        outputItem.setDescription(inputItem.getDescription());
+        outputItem.setAvailable(inputItem.getAvailable());
+        outputItem.setId(1);
+
+        user.setId(1);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> itemService.createItem(inputItem, 4)
+        );
+        Assertions.assertEquals("Имя предмета не должно быть пустым", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Создание Item - ошибка пустого Item.description")
+    void shouldReturnValidationExceptionCreateItemWithNullDescription() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        inputItem.setDescription("");
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setName(inputItem.getName());
+        outputItem.setDescription(inputItem.getDescription());
+        outputItem.setAvailable(inputItem.getAvailable());
+        outputItem.setId(1);
+
+        user.setId(1);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> itemService.createItem(inputItem, 4)
+        );
+        Assertions.assertEquals("Описание предмета не должно быть пустым", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Создание Item - ошибка пустого Item.available")
+    void shouldReturnValidationExceptionCreateItemWithNullAvailable() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        inputItem.setAvailable(null);
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setName(inputItem.getName());
+        outputItem.setDescription(inputItem.getDescription());
+        outputItem.setAvailable(inputItem.getAvailable());
+        outputItem.setId(1);
+
+        user.setId(1);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> itemService.createItem(inputItem, 4)
+        );
+        Assertions.assertEquals("Доступность предмета должна быть указана", ex.getMessage());
+    }
+
+    @Test
     @DisplayName("Должен обновить объект Item")
     void shouldUpdateItem() {
         //Arrange
@@ -91,6 +249,131 @@ class ItemServiceImplTest {
                 () -> assertEquals(inputItem.getDescription(), savedItemDto.getDescription()),
                 () -> assertEquals(inputItem.getAvailable(), savedItemDto.getAvailable()));
     }
+
+    @Test
+    @DisplayName("Обновление Item - некорректный инициатор")
+    void shouldReturnNoObjectExceptionUpdaterIsIncorrect() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        inputItem.setId(1);
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setId(1);
+        outputItem.setOwner(user);
+
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(outputItem));
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.updateItem(inputItem, 3, 1)
+        );
+        Assertions.assertEquals("Запрос на обновление может отправлять только пользователь", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Обновление Item - инициатор не найден")
+    void shouldReturnNoObjectExceptionUpdateItemUserIsNull() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        inputItem.setId(1);
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setId(1);
+        outputItem.setOwner(user);
+
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(outputItem));
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.updateItem(inputItem, 3, 1)
+        );
+        Assertions.assertEquals("Пользователь отсутствует", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Обновление Item - инициатор не указан")
+    void shouldReturnNoObjectExceptionUpdateItemUserIdIsNull() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        inputItem.setId(1);
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setId(1);
+        outputItem.setOwner(user);
+
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(outputItem));
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.updateItem(inputItem, null, 1)
+        );
+        Assertions.assertEquals("ID пользователя не должен быть пустым", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Обновление Item - объект не найден")
+    void shouldReturnNoObjectExceptionUpdateItemNotFound() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+        inputItem.setRequestId(null);
+        inputItem.setId(1);
+        Item outputItem = generator.nextObject(Item.class);
+        outputItem.setId(1);
+        outputItem.setOwner(user);
+
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
+
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.updateItem(inputItem, 3, 1)
+        );
+        Assertions.assertEquals("Такого предмета нет в системе", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Обновление Item - объект не указан")
+    void shouldReturnNoObjectExceptionUpdateItemINull() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        InputItemDto inputItem = generator.nextObject(InputItemDto.class);
+
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.updateItem(null, 3, 1)
+        );
+        Assertions.assertEquals("Объект item не должен быть пустым", ex.getMessage());
+    }
+
 
     @Test
     @DisplayName("Должен вернуть объект Item без бронирований")
@@ -228,5 +511,68 @@ class ItemServiceImplTest {
         Assertions.assertAll(
                 () -> assertEquals(savedComment.getAuthorName(), user.getName()),
                 () -> assertEquals(savedComment.getItem(), item));
+    }
+
+    @Test
+    @DisplayName("Ошибка создания комментария - не найдено бронирование")
+    void shouldReturnNoObjectCreateCommentBookingNotFound() {
+        //Arrange
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        Comment comment = generator.nextObject(Comment.class);
+        Booking booking = generator.nextObject(Booking.class);
+        user.setId(1);
+        item.setId(1);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(item));
+        Mockito.when(mockCommentRepository.save(Mockito.any(Comment.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Comment.class));
+        Mockito.when(mockBookingRepository.findByBookerIdAndItemIdAndStatusAndStartIsBefore(Mockito.anyInt(), Mockito.anyInt(), Mockito.any(BookingStatus.class), Mockito.any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> itemService.createComment(comment, 1, 1)
+        );
+        Assertions.assertEquals("Не найдено подходящее бронирование", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания комментария - комментарий пустой")
+    void shouldReturnNoObjectCreateCommentCommentIsNull() {
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> itemService.createComment(null, 1, 1)
+        );
+        Assertions.assertEquals("Комментарий не должен быть пустым", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания комментария - объект не найден")
+    void shouldReturnNoObjectCreateCommentItemNotFound() {
+        //Arrange
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        Comment comment = generator.nextObject(Comment.class);
+        Booking booking = generator.nextObject(Booking.class);
+        user.setId(1);
+        item.setId(1);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(item));
+        Mockito.when(mockCommentRepository.save(Mockito.any(Comment.class)))
+                .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Comment.class));
+        Mockito.when(mockBookingRepository.findByBookerIdAndItemIdAndStatusAndStartIsBefore(Mockito.anyInt(), Mockito.anyInt(), Mockito.any(BookingStatus.class), Mockito.any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemService.createComment(comment, 1, 1)
+        );
+        Assertions.assertEquals("Проверьте корректность ID пользователя или предмета", ex.getMessage());
     }
 }

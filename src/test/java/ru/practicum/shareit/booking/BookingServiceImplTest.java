@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoForCreate;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.NoObjectException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
@@ -59,6 +60,169 @@ class BookingServiceImplTest {
     }
 
     @Test
+    @DisplayName("Ошибка создания бронирования - пустой объект бронирования")
+    void shouldReturnNoObjectExceptionInCreateBookingIsNull() {
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.createBooking(null, 4)
+        );
+        Assertions.assertEquals("Не передан объект бронирования", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания бронирования - пользователь не найден")
+    void shouldReturnNoObjectExceptionInCreateBookingUserIsNull() {
+        //Arrange
+        BookingDtoForCreate booking = generator.nextObject(BookingDtoForCreate.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.createBooking(booking, 4)
+        );
+        Assertions.assertEquals("Пользователь не найден в системе", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания бронирования - собственная вещь")
+    void shouldReturnNoObjectExceptionInCreateBookingOwnItem() {
+        //Arrange
+        BookingDtoForCreate booking = generator.nextObject(BookingDtoForCreate.class);
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        user.setId(4);
+        item.setOwner(user);
+        item.setAvailable(true);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(item));
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.createBooking(booking, 4)
+        );
+        Assertions.assertEquals("Это ваша собственная вещь", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания бронирования - вещь недоступна")
+    void shouldReturnNoObjectExceptionInCreateItemUnavailable() {
+        //Arrange
+        BookingDtoForCreate booking = generator.nextObject(BookingDtoForCreate.class);
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        user.setId(4);
+        item.setOwner(user);
+        item.setAvailable(false);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(item));
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.createBooking(booking, 4)
+        );
+        Assertions.assertEquals("Объект недоступен для бронирования", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания бронирования - вещь не найдена")
+    void shouldReturnValidationExceptionInCreateBookingItemIsNull() {
+        //Arrange
+        BookingDtoForCreate booking = generator.nextObject(BookingDtoForCreate.class);
+        User user = generator.nextObject(User.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.createBooking(booking, 4)
+        );
+        Assertions.assertEquals("Данного объекта нет в БД", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания бронирования - даты не заполнены")
+    void shouldReturnValidationExceptionInCreateBookingDatesIsNull() {
+        //Arrange
+        BookingDtoForCreate booking = generator.nextObject(BookingDtoForCreate.class);
+        booking.setStart(null);
+        booking.setEnd(null);
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        user.setId(4);
+        item.setAvailable(true);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(item));
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.createBooking(booking, 4)
+        );
+        Assertions.assertEquals("Даты бронирования должны быть заполнены", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания бронирования - дата и время создания одинаковы")
+    void shouldReturnValidationExceptionInCreateBookingZeroDuration() {
+        //Arrange
+        BookingDtoForCreate booking = generator.nextObject(BookingDtoForCreate.class);
+        booking.setStart(LocalDateTime.now());
+        booking.setEnd(booking.getStart());
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        user.setId(4);
+        item.setAvailable(true);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(item));
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.createBooking(booking, 4)
+        );
+        Assertions.assertEquals("Бронирование должно длиться хотя бы 1 секунду", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Ошибка создания бронирования - дата создания позже окончания")
+    void shouldReturnValidationExceptionInCreateBookingNegativeDuration() {
+        //Arrange
+        BookingDtoForCreate booking = generator.nextObject(BookingDtoForCreate.class);
+        booking.setStart(LocalDateTime.now());
+        booking.setEnd(LocalDateTime.now().minusMinutes(5));
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        user.setId(4);
+        item.setAvailable(true);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        Mockito.when(mockItemRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(item));
+        //Act
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.createBooking(booking, 4)
+        );
+        Assertions.assertEquals("Окончание бронирования должно быть позже старта бронирования", ex.getMessage());
+    }
+
+    @Test
     @DisplayName("Должен вернуть бронирование инициатору")
     void shouldReturnBookingForBooker() {
         //Arrange
@@ -71,6 +235,21 @@ class BookingServiceImplTest {
                 .thenReturn(Optional.of(booking));
         //Act
         Assertions.assertNotNull(bookingService.getBooking(7, 1));
+    }
+
+    @Test
+    @DisplayName("Ошибка - бронирование не найдено в системе")
+    void shouldReturnNoObjectExceptionGetBookingForBooker() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        Mockito.when(mockBookingRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.getBooking(1, 1)
+        );
+        Assertions.assertEquals("Бронирование не найдено в системе", ex.getMessage());
     }
 
 
@@ -112,6 +291,80 @@ class BookingServiceImplTest {
                 () -> bookingService.getBooking(7, 4)
         );
         Assertions.assertEquals("Недостаточно прав на просмотр данного бронирования", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть ошибку пользователю - бронирование не найдено")
+    void shouldReturnNoObjectExceptionForBookingIsNull() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        Booking booking = generator.nextObject(Booking.class);
+        booking.setBooker(user);
+        booking.setId(7);
+        Mockito.when(mockBookingRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        //Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.getBooking(7, 4)
+        );
+        Assertions.assertEquals("Бронирование не найдено в системе", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Смена статуса - должен вернуть ошибку не найденного бронирования")
+    void shouldNotFoundBookingInSetBookingStatus() {
+        //Arrange
+        Mockito.when(mockBookingRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.empty());
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.setBookingStatus(7, false, 1)
+        );
+        Assertions.assertEquals("Данное бронирование не найдено в системе", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Смена статуса - должен вернуть ошибку некорректного статуса")
+    void shouldReturnIncorrectStatusInSetBookingStatus() {
+        //Arrange
+        Booking booking = generator.nextObject(Booking.class);
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        user.setId(1);
+        item.setOwner(user);
+        booking.setBooker(user);
+        booking.setItem(item);
+        booking.setStatus(BookingStatus.REJECTED);
+        Mockito.when(mockBookingRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(booking));
+        ValidationException ex = assertThrows(
+                ValidationException.class,
+                () -> bookingService.setBookingStatus(7, false, 1)
+        );
+        Assertions.assertEquals("Статус бронирования уже изменен", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Смена статуса - должен вернуть ошибку некорректного пользователя")
+    void shouldReturnIncorrectChangerInSetBookingStatus() {
+        //Arrange
+        Booking booking = generator.nextObject(Booking.class);
+        Item item = generator.nextObject(Item.class);
+        User user = generator.nextObject(User.class);
+        user.setId(4);
+        item.setOwner(user);
+        booking.setBooker(user);
+        booking.setItem(item);
+        booking.setStatus(BookingStatus.REJECTED);
+        Mockito.when(mockBookingRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(booking));
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> bookingService.setBookingStatus(7, false, 1)
+        );
+        Assertions.assertEquals("Статус бронирования может изменять только собственник вещи", ex.getMessage());
     }
 
     @Test
@@ -169,7 +422,7 @@ class BookingServiceImplTest {
     }
 
     @Test
-    @DisplayName("Должен вернуть перечень бронирований пользователя")
+    @DisplayName("Должен вернуть перечень бронирований пользователя - ALL")
     void shouldGetBookingsByUser() {
         //Arrange
         User user = generator.nextObject(User.class);
@@ -187,6 +440,112 @@ class BookingServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен вернуть перечень бронирований пользователя - WAITING")
+    void shouldGetBookingsByUserWaiting() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByBookerIdAndStatus(Mockito.anyInt(), Mockito.any(BookingStatus.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUser(5, "WAITING", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований пользователя - REJECTED")
+    void shouldGetBookingsByUserRejected() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByBookerIdAndStatus(Mockito.anyInt(), Mockito.any(BookingStatus.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUser(5, "REJECTED", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований пользователя - PAST")
+    void shouldGetBookingsByUserPast() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByBookerIdAndEndIsBefore(Mockito.anyInt(), Mockito.any(LocalDateTime.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUser(5, "PAST", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований пользователя - FUTURE")
+    void shouldGetBookingsByUserFuture() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByBookerIdAndStartIsAfter(Mockito.anyInt(), Mockito.any(LocalDateTime.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUser(5, "FUTURE", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований пользователя - CURRENT")
+    void shouldGetBookingsByUserCurrent() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(Mockito.anyInt(), Mockito.any(LocalDateTime.class), Mockito.any(LocalDateTime.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUser(5, "CURRENT", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований пользователя - INCORRECT_STATE")
+    void shouldReturnIncorrectStateGetBookingsByUser() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> bookingService.getBookingsByUsersItems(1, "INCORRECT_STATE", 0, 50)
+        );
+        Assertions.assertEquals("Unknown state: INCORRECT_STATE", ex.getMessage());
+    }
+
+
+    @Test
     @DisplayName("Должен вернуть перечень бронирований владельца вещи")
     void shouldGetBookingsByItemsOwner() {
         //Arrange
@@ -202,5 +561,110 @@ class BookingServiceImplTest {
         List<BookingDto> savedBookingDtos = bookingService.getBookingsByUsersItems(5, "ALL", 0, 50);
         //Assert
         Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - WAITING")
+    void shouldGetBookingsByItemsOwnerWaiting() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByItemIdInAndStatus(Mockito.anyList(), Mockito.any(BookingStatus.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUsersItems(5, "WAITING", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - REJECTED")
+    void shouldGetBookingsByItemsOwnerRejected() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByItemIdInAndStatus(Mockito.anyList(), Mockito.any(BookingStatus.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUsersItems(5, "REJECTED", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - PAST")
+    void shouldGetBookingsByItemsOwnerPast() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByItemIdInAndEndIsBefore(Mockito.anyList(), Mockito.any(LocalDateTime.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUsersItems(5, "PAST", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - FUTURE")
+    void shouldGetBookingsByItemsOwnerFuture() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByItemIdInAndStartIsAfter(Mockito.anyList(), Mockito.any(LocalDateTime.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUsersItems(5, "FUTURE", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - CURRENT")
+    void shouldGetBookingsByItemsOwnerCurrent() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Booking booking1 = generator.nextObject(Booking.class);
+        Booking booking2 = generator.nextObject(Booking.class);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        Mockito.when(mockBookingRepository.findByItemIdInAndStartIsBeforeAndEndIsAfter(Mockito.anyList(), Mockito.any(LocalDateTime.class), Mockito.any(LocalDateTime.class), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(booking1, booking2)));
+        //Act
+        List<BookingDto> savedBookingDtos = bookingService.getBookingsByUsersItems(5, "CURRENT", 0, 50);
+        //Assert
+        Assertions.assertEquals(savedBookingDtos.size(), List.of(booking1, booking2).size());
+    }
+
+    @Test
+    @DisplayName("Должен вернуть перечень бронирований владельца вещи - INCORRECT_STATE")
+    void shouldReturnIncorrectStateGetBookingsByItemsOwner() {
+        //Arrange
+        User user = generator.nextObject(User.class);
+        user.setId(5);
+        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
+                .thenReturn(Optional.of(user));
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> bookingService.getBookingsByUsersItems(1, "INCORRECT_STATE", 0, 50)
+        );
+        Assertions.assertEquals("Unknown state: INCORRECT_STATE", ex.getMessage());
     }
 }

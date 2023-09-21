@@ -16,7 +16,6 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.NoObjectException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -146,17 +145,32 @@ class BookingControllerTest {
     }
 
     @Test
-    @DisplayName("Должен вернуть ошибку валидации при запросе списка бронирований")
+    @DisplayName("Должен вернуть ошибку проверки State при запросе списка бронирований")
     void shouldReturnValidationErrorAfterGetBookingsByUser() throws Exception {
         when(bookingService.getBookingsByUser(Mockito.anyInt(),Mockito.anyString(),Mockito.anyInt(),Mockito.anyInt()))
-                .thenThrow(new ValidationException("Тестовая ошибка"));
+                .thenThrow(new IllegalArgumentException("Тестовая ошибка"));
         mvc.perform(get("/bookings")
                         .header("X-Sharer-User-Id",1)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorType", is("Validation error")))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.errorType", is("IllegalArgumentException")))
+                .andExpect(jsonPath("$.error", is("Тестовая ошибка")));
+    }
+
+    @Test
+    @DisplayName("Должен вернуть ошибку runtime при запросе списка бронирований")
+    void shouldReturnRuntimeErrorAfterGetBookingsByUser() throws Exception {
+        when(bookingService.getBookingsByUser(Mockito.anyInt(),Mockito.anyString(),Mockito.anyInt(),Mockito.anyInt()))
+                .thenThrow(new RuntimeException("Тестовая ошибка"));
+        mvc.perform(get("/bookings")
+                        .header("X-Sharer-User-Id",1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.errorType", is("Runtime error")))
                 .andExpect(jsonPath("$.error", is("Тестовая ошибка")));
     }
 
