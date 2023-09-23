@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.exception.NoObjectException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserMapper;
@@ -112,12 +113,16 @@ class ItemRequestServiceImplTest {
         //Arrange
         ItemRequest requestDto1 = generator.nextObject(ItemRequest.class);
         ItemRequest requestDto2 = generator.nextObject(ItemRequest.class);
+        Item item = generator.nextObject(Item.class);
+        item.setRequest(requestDto1);
         User user = generator.nextObject(User.class);
         user.setId(1);
         Mockito.when(mockUserRepository.existsById(Mockito.anyInt()))
                 .thenReturn(true);
         Mockito.when(mockItemRequestRepository.findByRequesterId(Mockito.anyInt()))
                 .thenReturn(List.of(requestDto1, requestDto2));
+        Mockito.when(mockItemRepository.findByRequestIdIn(Mockito.anyList()))
+                .thenReturn(List.of(item));
         //Act
         List<ItemRequestDto> savedRequests = itemRequestService.getRequestsByUser(1);
         //Assert
@@ -125,16 +130,34 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Должен вернуть запросы, созданные пользователем - пользователь не найден")
+    void shouldReturnUserNotFoundGetRequestsByUser() {
+        //Arrange
+        Mockito.when(mockUserRepository.existsById(Mockito.anyInt()))
+                .thenReturn(false);
+//Act
+        NoObjectException ex = assertThrows(
+                NoObjectException.class,
+                () -> itemRequestService.getRequestsByUser(100)
+        );
+        Assertions.assertEquals("Данный пользователь отсутствует в системе", ex.getMessage());
+    }
+
+    @Test
     @DisplayName("Должен вернуть все запросы")
     void getAllRequests() {
         ItemRequest requestDto1 = generator.nextObject(ItemRequest.class);
         ItemRequest requestDto2 = generator.nextObject(ItemRequest.class);
+        Item item = generator.nextObject(Item.class);
+        item.setRequest(requestDto1);
         User user = generator.nextObject(User.class);
         user.setId(1);
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(user));
         Mockito.when(mockItemRequestRepository.findAllByRequesterIdNot(Mockito.anyInt(), Mockito.any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(requestDto1, requestDto2)));
+        Mockito.when(mockItemRepository.findByRequestIdIn(Mockito.anyList()))
+                .thenReturn(List.of(item));
         //
         List<ItemRequestDto> savedRequests = itemRequestService.getAllRequests(0, 50, 50);
         //Assert
@@ -179,7 +202,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    @DisplayName("Должен вернуть объект запроса - объект не найден")
+    @DisplayName("Должен вернуть объект запроса - пользователь не найден")
     void shouldReturnUserNotFoundGetRequest() {
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.empty());
