@@ -23,7 +23,10 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
@@ -39,14 +42,16 @@ public class ItemServiceImpl implements ItemService {
         if (inputItemDto == null) {
             throw new NoObjectException("Объект item не должен быть пустым");
         }
-        if (userId == null) {
-            throw new NoObjectException("ID пользователя не должен быть пустым");
-        } else if (userRepository.findById(userId).isEmpty()) {
-            throw new NoObjectException("Пользователь отсутствует");
-        }
         Item item = ItemMapper.toItem(inputItemDto);
         checkItem(item);
-        item.setOwner(userRepository.findById(userId).get());
+        if (userId == null) {
+            throw new NoObjectException("ID пользователя не должен быть пустым");
+        }
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            throw new NoObjectException("Пользователь отсутствует");
+        }
+        item.setOwner(userOpt.get());
         if (inputItemDto.getRequestId() != null) {
             Optional<ItemRequest> itemRequestOptional = itemRequestRepository.findById(inputItemDto.getRequestId());
             itemRequestOptional.ifPresent(item::setRequest);
@@ -112,8 +117,9 @@ public class ItemServiceImpl implements ItemService {
         List<OutputItemDto> itemDtos = new ArrayList<>();
         for (Item item : items) {
             OutputItemDto outputItemDto = ItemMapper.toOutputItemDto(item);
-            itemDtos.add(itemEnrichment(outputItemDto, true));
+            itemDtos.add(outputItemDto);
         }
+        itemDtos = itemEnrichment(itemDtos, true);
         return itemDtos;
     }
 
@@ -122,12 +128,13 @@ public class ItemServiceImpl implements ItemService {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        List<Item> items = itemRepository.search(text, PageRequest.of(start, size)).getContent();
+        List<Item> items = itemRepository.search(text, PageRequest.of(start / size, size)).getContent();
         List<OutputItemDto> itemDtos = new ArrayList<>();
         for (Item item : items) {
             OutputItemDto outputItemDto = ItemMapper.toOutputItemDto(item);
-            itemDtos.add(itemEnrichment(outputItemDto, false));
+            itemDtos.add(outputItemDto);
         }
+        itemDtos = itemEnrichment(itemDtos, false);
         return itemDtos;
     }
 
@@ -163,15 +170,23 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private OutputItemDto itemEnrichment(OutputItemDto outputItemDto, boolean isOwner) {
+    private List<OutputItemDto> itemEnrichment(List<OutputItemDto> outputItemDtos, boolean isOwner) {
+        Map<Integer, OutputItemDto> itemDtos = outputItemDtos.stream().collect(Collectors.toMap(OutputItemDto::getId, Function.identity()));
         if (isOwner) {
-            Optional<Booking> lastBooking = bookingRepository.findLastBooking(outputItemDto.getId());
-            Optional<Booking> nextBooking = bookingRepository.findNextBooking(outputItemDto.getId());
-            lastBooking.ifPresent(booking -> outputItemDto.setLastBooking(BookingMapper.toBookingDtoForItemList(booking)));
-            nextBooking.ifPresent(booking -> outputItemDto.setNextBooking(BookingMapper.toBookingDtoForItemList(booking)));
+            List<Booking> lastBooking = bookingRepository.findLastBookings(new ArrayList<>(itemDtos.keySet()));
+            List<Booking> nextBooking = bookingRepository.findNextBookings(new ArrayList<>(itemDtos.keySet()));
+            for (Booking booking : lastBooking) {
+                itemDtos.get(booking.getItem().getId()).setLastBooking(BookingMapper.toBookingDtoForItemList(booking));
+            }
+            for (Booking booking : nextBooking) {
+                itemDtos.get(booking.getItem().getId()).setNextBooking(BookingMapper.toBookingDtoForItemList(booking));
+            }
         }
-        outputItemDto.setComments(ItemMapper.toCommentDtoList(commentRepository.findByItemId(outputItemDto.getId())));
-        return outputItemDto;
+        List<Comment> comments = commentRepository.findByItemIdIn(new ArrayList<>(itemDtos.keySet()));
+        for (Comment comment : comments) {
+            itemDtos.get(comment.getItem().getId()).getComments().add(ItemMapper.toCommentDto(comment));
+        }
+        return new ArrayList<>(itemDtos.values());
     }
 
 }

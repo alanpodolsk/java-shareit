@@ -61,14 +61,14 @@ class ShareItTests {
     @DisplayName("Проверка вывода предметов пользователей")
     void shouldGetAllItemsByUser() {
         //Arrange
-        User user1 = new User(null, "Вася", "vasya@mail.ru");
-        User user2 = new User(null, "Василий", "vasya1@mail.ru");
+        UserDto user1 = new UserDto(null, "Вася", "vasya@mail.ru");
+        UserDto user2 = new UserDto(null, "Василий", "vasya1@mail.ru");
         InputItemDto item1 = generator.nextObject(InputItemDto.class);
         InputItemDto item2 = generator.nextObject(InputItemDto.class);
         InputItemDto item3 = generator.nextObject(InputItemDto.class);
 
-        userService.createUser(UserMapper.toUserDto(user1));
-        userService.createUser(UserMapper.toUserDto(user2));
+        userService.createUser(user1);
+        userService.createUser(user2);
 
         OutputItemDto savedItem1 = itemService.createItem(item1, 1);
         OutputItemDto savedItem2 = itemService.createItem(item2, 2);
@@ -84,16 +84,16 @@ class ShareItTests {
     @DisplayName("Проверка вывода предметов по поиску")
     void shouldGetAllItemsBySearch() {
         //Arrange
-        User user1 = new User(null, "Вася", "vasya@mail.ru");
-        User user2 = new User(null, "Василий", "vasya1@mail.ru");
+        UserDto user1 = new UserDto(null, "Вася", "vasya@mail.ru");
+        UserDto user2 = new UserDto(null, "Василий", "vasya1@mail.ru");
         InputItemDto item1 = generator.nextObject(InputItemDto.class);
         InputItemDto item2 = generator.nextObject(InputItemDto.class);
         InputItemDto item3 = generator.nextObject(InputItemDto.class);
         item1.setName("Шуруповерт");
         item3.setDescription("Биты для шуруповерта");
 
-        userService.createUser(UserMapper.toUserDto(user1));
-        userService.createUser(UserMapper.toUserDto(user2));
+        userService.createUser(user1);
+        userService.createUser(user2);
 
         OutputItemDto savedItem1 = itemService.createItem(item1, 1);
         OutputItemDto savedItem2 = itemService.createItem(item2, 2);
@@ -109,10 +109,10 @@ class ShareItTests {
     @DisplayName("Должен вывести все запросы")
     void shouldGetRequests() {
         //Arrange
-        User user1 = new User(null, "Вася", "vasya@mail.ru");
-        User user2 = new User(null, "Василий", "vasya1@mail.ru");
-        userService.createUser(UserMapper.toUserDto(user1));
-        userService.createUser(UserMapper.toUserDto(user2));
+        UserDto user1 = new UserDto(null, "Вася", "vasya@mail.ru");
+        UserDto user2 = new UserDto(null, "Василий", "vasya1@mail.ru");
+        userService.createUser(user1);
+        userService.createUser(user2);
 
         ItemRequestDto requestDto1 = generator.nextObject(ItemRequestDto.class);
         ItemRequestDto requestDto2 = generator.nextObject(ItemRequestDto.class);
@@ -137,13 +137,13 @@ class ShareItTests {
     @DisplayName("Должен вывести все бронирования пользователя")
     void shouldGetAllBookingsByUser() {
         //Arrange
-        User user1 = new User(null, "Вася", "vasya@mail.ru");
-        User user2 = new User(null, "Василий", "vasya1@mail.ru");
-        User user3 = new User(null, "Василий1", "vasya11@mail.ru");
+        UserDto user1 = new UserDto(null, "Вася", "vasya@mail.ru");
+        UserDto user2 = new UserDto(null, "Василий", "vasya1@mail.ru");
+        UserDto user3 = new UserDto(null, "Василий1", "vasya11@mail.ru");
 
-        userService.createUser(UserMapper.toUserDto(user1));
-        userService.createUser(UserMapper.toUserDto(user2));
-        userService.createUser(UserMapper.toUserDto(user3));
+        userService.createUser(user1);
+        userService.createUser(user2);
+        userService.createUser(user3);
 
         InputItemDto item1 = generator.nextObject(InputItemDto.class);
         InputItemDto item2 = generator.nextObject(InputItemDto.class);
@@ -189,13 +189,13 @@ class ShareItTests {
     @DisplayName("Должен вывести все ожидающие бронирования вещей пользователя")
     void shouldGetWaitingBookingsByUserItems() {
         //Arrange
-        User user1 = new User(null, "Вася", "vasya@mail.ru");
-        User user2 = new User(null, "Василий", "vasya1@mail.ru");
-        User user3 = new User(null, "Василий1", "vasya11@mail.ru");
+        UserDto user1 = new UserDto(null, "Вася", "vasya@mail.ru");
+        UserDto user2 = new UserDto(null, "Василий", "vasya1@mail.ru");
+        UserDto user3 = new UserDto(null, "Василий1", "vasya11@mail.ru");
 
-        userService.createUser(UserMapper.toUserDto(user1));
-        userService.createUser(UserMapper.toUserDto(user2));
-        userService.createUser(UserMapper.toUserDto(user3));
+        userService.createUser(user1);
+        userService.createUser(user2);
+        userService.createUser(user3);
 
         InputItemDto item1 = generator.nextObject(InputItemDto.class);
         InputItemDto item2 = generator.nextObject(InputItemDto.class);

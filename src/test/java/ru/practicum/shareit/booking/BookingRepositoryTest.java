@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -21,6 +22,8 @@ import java.util.Optional;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class BookingRepositoryTest {
     EasyRandom generator = new EasyRandom();
+    @Autowired
+    private TestEntityManager entityManager;
     @Autowired
     private BookingRepository bookingRepository;
     @Autowired
@@ -53,9 +56,12 @@ class BookingRepositoryTest {
         Booking booking2 = new Booking(null,LocalDateTime.now().minusMinutes(10),LocalDateTime.now().minusMinutes(1),savedItem1,user1, BookingStatus.APPROVED);
         Booking booking3 = new Booking(null,LocalDateTime.now().plusMinutes(15),LocalDateTime.now().plusMinutes(25),savedItem1,user2, BookingStatus.REJECTED);
 
-        Booking savedBooking1 = bookingRepository.save(booking1);
-        Booking savedBooking2 = bookingRepository.save(booking2);
-        Booking savedBooking3 = bookingRepository.save(booking3);
+        bookingRepository.save(booking1);
+        bookingRepository.save(booking2);
+        bookingRepository.save(booking3);
+        Assertions.assertNotNull(entityManager.find(Booking.class,1));
+        Assertions.assertNotNull(entityManager.find(Booking.class,2));
+        Assertions.assertNotNull(entityManager.find(Booking.class,3));
 
         //Act
 
@@ -93,6 +99,9 @@ class BookingRepositoryTest {
         bookingRepository.save(booking1);
         bookingRepository.save(booking2);
         bookingRepository.save(booking3);
+        Assertions.assertNotNull(entityManager.find(Booking.class,1));
+        Assertions.assertNotNull(entityManager.find(Booking.class,2));
+        Assertions.assertNotNull(entityManager.find(Booking.class,3));
 
         //Act
 
@@ -129,6 +138,9 @@ class BookingRepositoryTest {
         bookingRepository.save(booking1);
         bookingRepository.save(booking2);
         bookingRepository.save(booking3);
+        Assertions.assertNotNull(entityManager.find(Booking.class,1));
+        Assertions.assertNotNull(entityManager.find(Booking.class,2));
+        Assertions.assertNotNull(entityManager.find(Booking.class,3));
 
         //Act
 
@@ -165,6 +177,9 @@ class BookingRepositoryTest {
         bookingRepository.save(booking1);
         bookingRepository.save(booking2);
         bookingRepository.save(booking3);
+        Assertions.assertNotNull(entityManager.find(Booking.class,1));
+        Assertions.assertNotNull(entityManager.find(Booking.class,2));
+        Assertions.assertNotNull(entityManager.find(Booking.class,3));
 
         //Act
 
@@ -202,6 +217,9 @@ class BookingRepositoryTest {
         bookingRepository.save(booking1);
         bookingRepository.save(booking2);
         bookingRepository.save(booking3);
+        Assertions.assertNotNull(entityManager.find(Booking.class,1));
+        Assertions.assertNotNull(entityManager.find(Booking.class,2));
+        Assertions.assertNotNull(entityManager.find(Booking.class,3));
 
         //Act
 
@@ -217,9 +235,10 @@ class BookingRepositoryTest {
         User user2 = new User(null,"Василий","vasya1@mail.ru");
         User user3 = new User(null,"Василий1","vasya11@mail.ru");
 
-        user1 = userRepository.save(user1);
-        user2 = userRepository.save(user2);
-        user3 = userRepository.save(user3);
+        entityManager.persist(user1);
+        entityManager.persist(user2);
+        entityManager.persist(user3);
+        Assertions.assertNotNull(entityManager.find(User.class,1));
 
         Item item1 = generator.nextObject(Item.class);
         Item item2 = generator.nextObject(Item.class);
@@ -238,6 +257,9 @@ class BookingRepositoryTest {
         bookingRepository.save(booking1);
         bookingRepository.save(booking2);
         bookingRepository.save(booking3);
+        Assertions.assertNotNull(entityManager.find(Booking.class,1));
+        Assertions.assertNotNull(entityManager.find(Booking.class,2));
+        Assertions.assertNotNull(entityManager.find(Booking.class,3));
 
         //Act
 

@@ -2,6 +2,8 @@ package ru.practicum.shareit.item.dto;
 
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +16,16 @@ public class ItemMapper {
         if (item.getRequest() != null) {
             requestId = item.getRequest().getId();
         }
+        UserDto owner = null;
+        if (item.getOwner() != null) {
+            owner = UserMapper.toUserDto(item.getOwner());
+        }
         return new OutputItemDto(
                 item.getId(),
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
-                item.getOwner(),
+                owner,
                 requestId,
                 null,
                 null,
@@ -33,9 +39,8 @@ public class ItemMapper {
                 inputItemDto.getName(),
                 inputItemDto.getDescription(),
                 inputItemDto.getAvailable(),
-                inputItemDto.getOwner(),
+                null,
                 null
-
         );
     }
 
@@ -43,7 +48,7 @@ public class ItemMapper {
         return new CommentDto(
                 comment.getId(),
                 comment.getText(),
-                comment.getItem(),
+                comment.getItem().getId(),
                 comment.getAuthor().getName(),
                 comment.getCreated());
     }

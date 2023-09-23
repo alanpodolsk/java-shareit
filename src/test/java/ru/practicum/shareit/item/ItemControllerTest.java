@@ -18,7 +18,7 @@ import ru.practicum.shareit.item.dto.InputItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.model.Comment;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.nio.charset.StandardCharsets;
@@ -45,7 +45,7 @@ class ItemControllerTest {
     @Test
     @DisplayName("Должен создать вещь")
     void shouldCreateItem() throws Exception {
-        User user = generator.nextObject(User.class);
+        UserDto user = generator.nextObject(UserDto.class);
         user.setId(1);
         InputItemDto item = generator.nextObject(InputItemDto.class);
         when(itemService.createItem(Mockito.any(InputItemDto.class),Mockito.anyInt()))
@@ -131,13 +131,13 @@ class ItemControllerTest {
     void createComment() throws Exception {
         User user = generator.nextObject(User.class);
         user.setId(1);
-        Item item = generator.nextObject(Item.class);
+        OutputItemDto item = generator.nextObject(OutputItemDto.class);
         Comment comment = generator.nextObject(Comment.class);
         when(itemService.createComment(Mockito.any(Comment.class),Mockito.anyInt(),Mockito.anyInt()))
                 .thenAnswer(invocationOnMock -> {
                     CommentDto commentDto = ItemMapper.toCommentDto(invocationOnMock.getArgument(0, Comment.class));
                     commentDto.setAuthorName(user.getName());
-                    commentDto.setItem(item);
+                    commentDto.setItemId(item.getId());
                     return commentDto;
                 });
         mvc.perform(post("/items/1/comment")
@@ -149,14 +149,14 @@ class ItemControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(comment.getId()), Integer.class))
                 .andExpect(jsonPath("$.text", is(comment.getText())))
-                .andExpect(jsonPath("$.item.id").value(item.getId()))
+                .andExpect(jsonPath("$.itemId").value(item.getId()))
                 .andExpect(jsonPath("$.authorName").value(user.getName()));
     }
 
     @Test
     @DisplayName("Должен обновить вещь")
     void shouldUpdateItem() throws Exception {
-        User user = generator.nextObject(User.class);
+        UserDto user = generator.nextObject(UserDto.class);
         user.setId(1);
         InputItemDto item = generator.nextObject(InputItemDto.class);
         when(itemService.updateItem(Mockito.any(InputItemDto.class),Mockito.anyInt(),Mockito.anyInt()))
@@ -177,13 +177,13 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.name", is(item.getName())))
                 .andExpect(jsonPath("$.description").value(item.getDescription()))
                 .andExpect(jsonPath("$.available").value(item.getAvailable()))
-                .andExpect(jsonPath("$.owner").value(user));
+                .andExpect(jsonPath("$.owner.id").value(user.getId()));
     }
 
     @Test
     @DisplayName("Должен вернуть вещь по id")
     void shouldGetItem() throws Exception {
-        User user = generator.nextObject(User.class);
+        UserDto user = generator.nextObject(UserDto.class);
         user.setId(1);
         OutputItemDto item = generator.nextObject(OutputItemDto.class);
         item.setOwner(user);
@@ -206,7 +206,7 @@ class ItemControllerTest {
     @DisplayName("Должен вернуть вещи пользователя")
     void getItemsByUser() throws Exception {
         //Arrange
-        User user = generator.nextObject(User.class);
+        UserDto user = generator.nextObject(UserDto.class);
         user.setId(1);
         OutputItemDto item1 = generator.nextObject(OutputItemDto.class);
         OutputItemDto item2 = generator.nextObject(OutputItemDto.class);
@@ -237,7 +237,7 @@ class ItemControllerTest {
     @Test
     @DisplayName("Должен вернуть вещи по поиску")
     void getItemsBySearch() throws Exception {
-        User user = generator.nextObject(User.class);
+        UserDto user = generator.nextObject(UserDto.class);
         user.setId(1);
         OutputItemDto item1 = generator.nextObject(OutputItemDto.class);
         OutputItemDto item2 = generator.nextObject(OutputItemDto.class);

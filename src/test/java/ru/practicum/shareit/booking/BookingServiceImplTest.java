@@ -4,7 +4,9 @@ import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -14,8 +16,12 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.NoObjectException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -25,6 +31,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@ExtendWith(MockitoExtension.class)
 class BookingServiceImplTest {
     EasyRandom generator = new EasyRandom();
     ItemRepository mockItemRepository = Mockito.mock(ItemRepository.class);
@@ -41,6 +48,8 @@ class BookingServiceImplTest {
         BookingDtoForCreate booking = generator.nextObject(BookingDtoForCreate.class);
         item.setId(1);
         user.setId(1);
+        UserDto userDto = UserMapper.toUserDto(user);
+        OutputItemDto itemDto = ItemMapper.toOutputItemDto(item);
         booking.setItemId(1);
         booking.setStart(LocalDateTime.now().plusMinutes(5));
         booking.setEnd(LocalDateTime.now().plusMinutes(15));
@@ -55,8 +64,8 @@ class BookingServiceImplTest {
         //Assert
         Assertions.assertNotNull(savedBooking);
         Assertions.assertAll(
-                () -> assertEquals(user, savedBooking.getBooker()),
-                () -> assertEquals(item, savedBooking.getItem()));
+                () -> assertEquals(userDto, savedBooking.getBooker()),
+                () -> assertEquals(itemDto, savedBooking.getItem()));
     }
 
     @Test

@@ -4,14 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.item.dto.OutputItemDto;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.time.LocalDateTime;
-
-/**
- * TODO Sprint add-bookings.
- */
 
     @Data
     @AllArgsConstructor
@@ -20,8 +16,8 @@ import java.time.LocalDateTime;
         private Integer id;
         private LocalDateTime start;
         private LocalDateTime end;
-        private Item item;
-        private User booker;
+        private OutputItemDto item;
+        private UserDto booker;
         private BookingStatus status;
     }
 

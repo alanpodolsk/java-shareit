@@ -19,7 +19,9 @@ import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.ItemRequestRepository;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -43,7 +45,7 @@ class ItemServiceImplTest {
     @DisplayName("Должен создать Item")
     void shouldCreateItem() {
         //Arrange
-        User user = generator.nextObject(User.class);
+        UserDto user = generator.nextObject(UserDto.class);
         InputItemDto inputItem = generator.nextObject(InputItemDto.class);
         inputItem.setRequestId(null);
         Item outputItem = generator.nextObject(Item.class);
@@ -54,7 +56,7 @@ class ItemServiceImplTest {
 
         user.setId(1);
         Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
-                .thenReturn(Optional.of(user));
+                .thenReturn(Optional.of(UserMapper.toUser(user)));
         Mockito.when(mockItemRepository.save(Mockito.any(Item.class)))
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, Item.class));
 
@@ -510,7 +512,7 @@ class ItemServiceImplTest {
         Assertions.assertNotNull(savedComment);
         Assertions.assertAll(
                 () -> assertEquals(savedComment.getAuthorName(), user.getName()),
-                () -> assertEquals(savedComment.getItem(), item));
+                () -> assertEquals(savedComment.getItemId(), item.getId()));
     }
 
     @Test

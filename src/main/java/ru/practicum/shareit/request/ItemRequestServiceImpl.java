@@ -7,6 +7,8 @@ import ru.practicum.shareit.exception.NoObjectException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.dto.OutputItemDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestsMapper;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -16,7 +18,10 @@ import ru.practicum.shareit.user.model.User;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
@@ -44,16 +49,20 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDto> getRequestsByUser(Integer userId) {
         List<ItemRequestDto> itemRequestDtos;
-        if (userRepository.findById(userId).isEmpty()) {
+        if (!userRepository.existsById(userId)) {
             throw new NoObjectException("Данный пользователь отсутствует в системе");
-        } else {
-            List<ItemRequest> itemRequests = itemRequestRepository.findByRequesterId(userId);
-            itemRequestDtos = new ArrayList<>();
-            for (ItemRequest itemRequest : itemRequests) {
-                ItemRequestDto itemRequestDto = ItemRequestsMapper.toItemRequestDto(itemRequest);
-                itemRequestDto.setItems(ItemMapper.toOutputItemDtos(itemRepository.findByRequestId(itemRequestDto.getId())));
-                itemRequestDtos.add(itemRequestDto);
-            }
+        }
+        List<ItemRequest> itemRequests = itemRequestRepository.findByRequesterId(userId);
+        itemRequestDtos = new ArrayList<>();
+        for (ItemRequest itemRequest : itemRequests) {
+            ItemRequestDto itemRequestDto = ItemRequestsMapper.toItemRequestDto(itemRequest);
+            itemRequestDtos.add(itemRequestDto);
+        }
+        Map<Integer, ItemRequestDto> requests = itemRequestDtos.stream().collect(Collectors.toMap(ItemRequestDto::getId, Function.identity()));
+        List<Item> items = itemRepository.findByRequestIdIn(new ArrayList<>(requests.keySet()));
+        for (Item item : items) {
+            OutputItemDto itemDto = ItemMapper.toOutputItemDto(item);
+            requests.get(itemDto.getRequestId()).getItems().add(itemDto);
         }
         return itemRequestDtos;
     }
@@ -64,19 +73,25 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new ValidationException("Некорректные параметры пагинации");
         }
         List<ItemRequestDto> itemRequestDtos;
-        List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterIdNot(userId, PageRequest.of(from, size)).getContent();
+        List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterIdNot(userId, PageRequest.of(from / size, size)).getContent();
+
         itemRequestDtos = new ArrayList<>();
         for (ItemRequest itemRequest : itemRequests) {
             ItemRequestDto itemRequestDto = ItemRequestsMapper.toItemRequestDto(itemRequest);
-            itemRequestDto.setItems(ItemMapper.toOutputItemDtos(itemRepository.findByRequestId(itemRequestDto.getId())));
             itemRequestDtos.add(itemRequestDto);
+        }
+        Map<Integer, ItemRequestDto> requests = itemRequestDtos.stream().collect(Collectors.toMap(ItemRequestDto::getId, Function.identity()));
+        List<Item> items = itemRepository.findByRequestIdIn(new ArrayList<>(requests.keySet()));
+        for (Item item : items) {
+            OutputItemDto itemDto = ItemMapper.toOutputItemDto(item);
+            requests.get(itemDto.getRequestId()).getItems().add(itemDto);
         }
         return itemRequestDtos;
     }
 
     @Override
     public ItemRequestDto getRequest(Integer itemId, Integer userId) {
-        if (userRepository.findById(userId).isEmpty()) {
+        if (!userRepository.existsById(userId)) {
             throw new NoObjectException("Пользователь отсутствует в системе");
         }
         Optional<ItemRequest> requestOptional = itemRequestRepository.findById(itemId);

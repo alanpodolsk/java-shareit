@@ -34,6 +34,13 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     Page<Booking> findByItemIdInAndStartIsBeforeAndEndIsAfter(List<Integer> itemIds, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
+    @Query(value = "select * from bookings where item_id in (?1) AND start_date = (SELECT MAX(start_date) from bookings where item_id in (?1) AND start_date < now() AND status != 'REJECTED')", nativeQuery = true)
+    List<Booking> findLastBookings(List<Integer> itemIds);
+
+    @Query(value = "select * from bookings where item_id in (?1) AND start_date = (SELECT MIN(start_date) from bookings where item_id in (?1) AND start_date > now() AND status != 'REJECTED')", nativeQuery = true)
+    List<Booking> findNextBookings(List<Integer> itemIds);
+
+
     @Query(value = "select * from bookings where item_id = ?1 AND start_date = (SELECT MAX(start_date) from bookings where item_id = ?1 AND start_date < now() AND status != 'REJECTED')", nativeQuery = true)
     Optional<Booking> findLastBooking(Integer itemId);
 

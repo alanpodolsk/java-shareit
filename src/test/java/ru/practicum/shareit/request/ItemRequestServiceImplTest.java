@@ -12,6 +12,7 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
@@ -48,7 +49,7 @@ class ItemRequestServiceImplTest {
         ItemRequestDto savedRequestDto = itemRequestService.createRequest(requestDto, 1);
         Assertions.assertNotNull(savedRequestDto);
         Assertions.assertAll(
-                () -> assertEquals(user, savedRequestDto.getRequester()),
+                () -> assertEquals(UserMapper.toUserDto(user), savedRequestDto.getRequester()),
                 () -> assertNotNull(savedRequestDto.getCreated()));
     }
 
@@ -113,8 +114,8 @@ class ItemRequestServiceImplTest {
         ItemRequest requestDto2 = generator.nextObject(ItemRequest.class);
         User user = generator.nextObject(User.class);
         user.setId(1);
-        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
-                .thenReturn(Optional.of(user));
+        Mockito.when(mockUserRepository.existsById(Mockito.anyInt()))
+                .thenReturn(true);
         Mockito.when(mockItemRequestRepository.findByRequesterId(Mockito.anyInt()))
                 .thenReturn(List.of(requestDto1, requestDto2));
         //Act
@@ -154,9 +155,8 @@ class ItemRequestServiceImplTest {
     @DisplayName("Должен вернуть объект запроса")
     void shouldGetRequest() {
         ItemRequest requestDto = generator.nextObject(ItemRequest.class);
-        User user = generator.nextObject(User.class);
-        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
-                .thenReturn(Optional.of(user));
+        Mockito.when(mockUserRepository.existsById(Mockito.anyInt()))
+                .thenReturn(true);
         Mockito.when(mockItemRequestRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.of(requestDto));
         //Assert
@@ -166,9 +166,8 @@ class ItemRequestServiceImplTest {
     @Test
     @DisplayName("Должен вернуть объект запроса - объект не найден")
     void shouldReturnRequestNotFoundGetRequest() {
-        User user = generator.nextObject(User.class);
-        Mockito.when(mockUserRepository.findById(Mockito.anyInt()))
-                .thenReturn(Optional.of(user));
+        Mockito.when(mockUserRepository.existsById(Mockito.anyInt()))
+                .thenReturn(true);
         Mockito.when(mockItemRequestRepository.findById(Mockito.anyInt()))
                 .thenReturn(Optional.empty());
         //Act
