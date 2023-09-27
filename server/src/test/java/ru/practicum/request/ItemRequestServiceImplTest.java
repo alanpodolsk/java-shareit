@@ -8,7 +8,6 @@ import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.exception.NoObjectException;
-import ru.practicum.exception.ValidationException;
 import ru.practicum.item.ItemRepository;
 import ru.practicum.item.model.Item;
 import ru.practicum.request.dto.ItemRequestDto;
@@ -28,8 +27,6 @@ class ItemRequestServiceImplTest {
     UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
     ItemRequestRepository mockItemRequestRepository = Mockito.mock(ItemRequestRepository.class);
     ItemRequestServiceImpl itemRequestService = new ItemRequestServiceImpl(mockItemRequestRepository, mockUserRepository, mockItemRepository);
-
-
 
 
     @Test
@@ -75,7 +72,6 @@ class ItemRequestServiceImplTest {
         );
         Assertions.assertEquals("Данный пользователь отсутствует в системе", ex.getMessage());
     }
-
 
 
     @Test
@@ -154,7 +150,6 @@ class ItemRequestServiceImplTest {
         //Assert
         Assertions.assertEquals(2, savedRequests.size());
     }
-
 
 
     @Test
