@@ -80,7 +80,7 @@ public class BookingServiceImpl implements BookingService {
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ValidationException("Статус бронирования уже изменен");
         }
-        if (approved == true) {
+        if (approved) {
             booking.setStatus(BookingStatus.APPROVED);
         } else {
             booking.setStatus(BookingStatus.REJECTED);
@@ -98,15 +98,15 @@ public class BookingServiceImpl implements BookingService {
             case ALL:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerId(userId, PageRequest.of(start > 0 ? start / size : 0, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             case WAITING:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.WAITING, PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.WAITING, PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case REJECTED:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.REJECTED, PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.REJECTED, PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case FUTURE:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStartIsAfter(userId, LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case PAST:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndEndIsBefore(userId, LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case CURRENT:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId, LocalDateTime.now(), LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId, LocalDateTime.now(), LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             default:
                 return null;
         }
@@ -125,15 +125,15 @@ public class BookingServiceImpl implements BookingService {
 
         switch (Enum.valueOf(BookingStateStatus.class, state)) {
             case ALL:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdIn(itemIds, PageRequest.of(start > 0 ? start / size : 0, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdIn(itemIds, PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case WAITING:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStatus(itemIds, BookingStatus.WAITING, PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStatus(itemIds, BookingStatus.WAITING, PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case REJECTED:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStatus(itemIds, BookingStatus.REJECTED, PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStatus(itemIds, BookingStatus.REJECTED, PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case FUTURE:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStartIsAfter(itemIds, LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStartIsAfter(itemIds, LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case PAST:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndEndIsBefore(itemIds, LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndEndIsBefore(itemIds, LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
             case CURRENT:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStartIsBeforeAndEndIsAfter(itemIds, LocalDateTime.now(), LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             default:
