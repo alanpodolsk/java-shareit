@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import ru.practicum.exception.NoObjectException;
-import ru.practicum.exception.ValidationException;
 import ru.practicum.item.ItemRepository;
 import ru.practicum.item.dto.ItemMapper;
 import ru.practicum.item.dto.OutputItemDto;
@@ -33,9 +32,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto createRequest(ItemRequestDto itemRequestDto, Integer userId) {
-        if (itemRequestDto == null || itemRequestDto.getDescription() == null) {
-            throw new ValidationException("Передан пустой запрос");
-        }
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new NoObjectException("Данный пользователь отсутствует в системе");
@@ -69,9 +65,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDto> getAllRequests(Integer from, Integer size, Integer userId) {
-        if (size < 1 || from < 0) {
-            throw new ValidationException("Некорректные параметры пагинации");
-        }
         List<ItemRequestDto> itemRequestDtos;
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterIdNot(userId, PageRequest.of(from / size, size)).getContent();
 

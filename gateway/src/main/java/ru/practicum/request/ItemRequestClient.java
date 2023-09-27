@@ -1,5 +1,6 @@
 package ru.practicum.request;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.BaseClient;
 
@@ -12,10 +13,11 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.request.dto.ItemRequestDto;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ItemRequestClient extends BaseClient {
-    private static final String API_PREFIX = "/bookings";
+    private static final String API_PREFIX = "/requests";
 
     @Autowired
     public ItemRequestClient(@Value("${shareit-server.url}") String serverUrl, RestTemplateBuilder builder) {
@@ -28,22 +30,26 @@ public class ItemRequestClient extends BaseClient {
     }
 
 
-    public ItemRequestDto createRequest(@RequestBody ItemRequestDto itemRequestDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return null;
+    public ResponseEntity<Object> createRequest(@RequestBody ItemRequestDto itemRequestDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        ItemRequestValidations.validateCreateRequest(itemRequestDto, userId);
+        return post("",userId,itemRequestDto);
     }
 
 
-    public List<ItemRequestDto> getRequestsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return null;
+    public ResponseEntity<Object> getRequestsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+        ItemRequestValidations.validateGetRequestsByUser(userId);
+        return get("",userId);
     }
 
 
-    public List<ItemRequestDto> getAllRequests(@RequestParam(defaultValue = "0") Integer from, @RequestParam(defaultValue = "10") Integer size, @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return null;
+    public ResponseEntity<Object> getAllRequests(@RequestParam(defaultValue = "0") Integer from, @RequestParam(defaultValue = "10") Integer size, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        ItemRequestValidations.validateGetAllRequests(from, size, userId);
+        return get("/all?from={from}&size={size}", Long.valueOf(userId), Map.of("from",from,"size",size));
     }
 
 
-    public ItemRequestDto getRequest(@PathVariable Integer requestId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return null;
+    public ResponseEntity<Object> getRequest(@PathVariable Integer requestId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        ItemRequestValidations.validateGetRequest(requestId, userId);
+        return get("/"+requestId,userId);
     }
 }

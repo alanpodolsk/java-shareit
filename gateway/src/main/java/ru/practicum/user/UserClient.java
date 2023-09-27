@@ -3,17 +3,16 @@ package ru.practicum.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.BaseClient;
 import ru.practicum.user.dto.UserDto;
 
-import java.util.List;
-
 @Service
 public class UserClient extends BaseClient {
-    private static final String API_PREFIX = "/bookings";
+    private static final String API_PREFIX = "/users";
 
     @Autowired
     public UserClient(@Value("${shareit-server.url}") String serverUrl, RestTemplateBuilder builder) {
@@ -26,22 +25,30 @@ public class UserClient extends BaseClient {
     }
 
 
-    public UserDto getUser(Integer id) {
-        return null;
+    public ResponseEntity<Object> getUser(Integer id) {
+        UserValidations.validateGetUser(id);
+        return get("/"+id);
     }
 
 
-    public List<UserDto> getAllUsers() {
-        return null;
+    public ResponseEntity<Object> getAllUsers() {
+        return get("");
     }
 
 
-    public UserDto updateUser(UserDto userDto, Integer id) {
-        return null;
+    public ResponseEntity<Object> updateUser(UserDto userDto, Integer id) {
+        UserValidations.validateUpdateUser(userDto, id);
+        return patch("/"+id,userDto);
     }
 
 
-    public UserDto createUser(UserDto user) {
-        return null;
+    public ResponseEntity<Object> createUser(UserDto user) {
+        UserValidations.validateCreateUser(user);
+        return post("",user);
+    }
+
+    public void deleteUser(Integer id) {
+        UserValidations.validateGetUser(id);
+        delete("/"+id);
     }
 }

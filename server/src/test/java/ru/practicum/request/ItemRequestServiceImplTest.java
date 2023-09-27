@@ -76,16 +76,7 @@ class ItemRequestServiceImplTest {
         Assertions.assertEquals("Данный пользователь отсутствует в системе", ex.getMessage());
     }
 
-    @Test
-    @DisplayName("Создание запроса - пустой запрос")
-    void shouldReturnEmptyRequestCreateRequest() {
-        //Act
-        ValidationException ex = assertThrows(
-                ValidationException.class,
-                () -> itemRequestService.createRequest(null, 4)
-        );
-        Assertions.assertEquals("Передан пустой запрос", ex.getMessage());
-    }
+
 
     @Test
     @DisplayName("Должен возвратить ошибку при некорректном пользователе")
@@ -164,15 +155,7 @@ class ItemRequestServiceImplTest {
         Assertions.assertEquals(2, savedRequests.size());
     }
 
-    @Test
-    @DisplayName("Должен вернуть все запросы - ошибка пагинации")
-    void shouldReturnValidationExceptionPaginationGetAllRequests() {
-        ValidationException ex = assertThrows(
-                ValidationException.class,
-                () -> itemRequestService.getAllRequests(-1, 2,1)
-        );
-        Assertions.assertEquals("Некорректные параметры пагинации", ex.getMessage());
-    }
+
 
     @Test
     @DisplayName("Должен вернуть объект запроса")

@@ -72,15 +72,6 @@ class UserServiceImplTest {
         Assertions.assertNotNull(userService.createUser(userDto));
     }
 
-    @Test
-    @DisplayName("Ошибка создания пользователя - пустой параметр")
-    void shouldReturnNoObjectExceptionCreateUserEmptyInput() {
-        NoObjectException ex = assertThrows(
-                NoObjectException.class,
-                () -> userService.createUser(null)
-        );
-        Assertions.assertEquals("Объект пользователя не может быть null", ex.getMessage());
-    }
 
     @Test
     @DisplayName("Должен удалить пользователя")
@@ -105,15 +96,6 @@ class UserServiceImplTest {
         Assertions.assertNotNull(userService.updateUser(userDto, 1));
     }
 
-    @Test
-    @DisplayName("Ошибка обновления пользователя - пустой параметр")
-    void shouldReturnNoObjectExceptionUpdateUserEmptyInput() {
-        NoObjectException ex = assertThrows(
-                NoObjectException.class,
-                () -> userService.updateUser(null,1)
-        );
-        Assertions.assertEquals("Объект пользователя не может быть null", ex.getMessage());
-    }
 
     @Test
     @DisplayName("Должен обновить пользователя")
@@ -126,7 +108,7 @@ class UserServiceImplTest {
                 .thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0, User.class));
         NoObjectException ex = assertThrows(
                 NoObjectException.class,
-                () -> userService.updateUser(userDto,1)
+                () -> userService.updateUser(userDto, 1)
         );
         Assertions.assertEquals("Пользователя с данным id не существует в программе", ex.getMessage());
     }

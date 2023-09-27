@@ -1,6 +1,7 @@
 package ru.practicum.user;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.Create;
@@ -8,38 +9,35 @@ import ru.practicum.user.dto.UserDto;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping(path = "/users")
 @AllArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserClient userClient;
 
     @GetMapping("/{id}")
-    public UserDto getUser(@PathVariable Integer id) {
-        return userService.getUser(id);
+    public ResponseEntity<Object> getUser(@PathVariable Integer id) {
+        return userClient.getUser(id);
     }
 
     @GetMapping
-    public List<UserDto> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<Object> getAllUsers() {
+        return userClient.getAllUsers();
     }
 
     @PatchMapping("/{id}")
-    public UserDto updateUser(@RequestBody UserDto userDto, @PathVariable Integer id) {
-        return userService.updateUser(userDto, id);
+    public ResponseEntity<Object> updateUser(@RequestBody UserDto userDto, @PathVariable Integer id) {
+        return userClient.updateUser(userDto, id);
     }
 
     @PostMapping
-    public UserDto createUser(@RequestBody @Validated(Create.class) UserDto user) {
-        return userService.createUser(user);
+    public ResponseEntity<Object> createUser(@RequestBody @Validated(Create.class) UserDto user) {
+        return userClient.createUser(user);
     }
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Integer id) {
-        userService.deleteUser(id);
+        userClient.deleteUser(id);
     }
 }

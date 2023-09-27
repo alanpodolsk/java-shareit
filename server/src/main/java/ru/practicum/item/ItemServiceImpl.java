@@ -39,14 +39,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public OutputItemDto createItem(InputItemDto inputItemDto, Integer userId) {
-        if (inputItemDto == null) {
-            throw new NoObjectException("Объект item не должен быть пустым");
-        }
         Item item = ItemMapper.toItem(inputItemDto);
-        checkItem(item);
-        if (userId == null) {
-            throw new NoObjectException("ID пользователя не должен быть пустым");
-        }
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             throw new NoObjectException("Пользователь отсутствует");
@@ -63,17 +56,12 @@ public class ItemServiceImpl implements ItemService {
     public OutputItemDto updateItem(InputItemDto inputItemDto, Integer userId, Integer itemId) {
         //проверка пользователя и добавляемого объекта
         Item presentItem;
-        if (inputItemDto == null) {
-            throw new NoObjectException("Объект item не должен быть пустым");
-        }
         Optional<Item> presentItemOpt = itemRepository.findById(itemId);
         if (presentItemOpt.isEmpty()) {
             throw new NoObjectException("Такого предмета нет в системе");
         } else
             presentItem = presentItemOpt.get();
-        if (userId == null) {
-            throw new NoObjectException("ID пользователя не должен быть пустым");
-        } else if (userRepository.findById(userId).isEmpty()) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new NoObjectException("Пользователь отсутствует");
         } else if (!presentItem.getOwner().getId().equals(userId)) {
             throw new NoObjectException("Запрос на обновление может отправлять только пользователь");
@@ -140,16 +128,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDto createComment(Comment comment, Integer userId, Integer itemId) {
-        if (comment == null || comment.getText().isBlank()) {
-            throw new ValidationException("Комментарий не должен быть пустым");
-        }
         Optional<Item> itemOpt = itemRepository.findById(itemId);
         Optional<User> userOpt = userRepository.findById(userId);
         if (itemOpt.isEmpty() || userOpt.isEmpty()) {
             throw new NoObjectException("Проверьте корректность ID пользователя или предмета");
         }
         List<Booking> bookings = bookingRepository.findByBookerIdAndItemIdAndStatusAndStartIsBefore(userId, itemId, BookingStatus.APPROVED, LocalDateTime.now());
-        if (bookings.size() == 0) {
+        if (bookings.isEmpty()) {
             throw new ValidationException("Не найдено подходящее бронирование");
         }
         comment.setItem(itemOpt.get());
@@ -158,17 +143,7 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toCommentDto(commentRepository.save(comment));
     }
 
-    private void checkItem(Item item) {
-        if (item.getName() == null || item.getName().isBlank()) {
-            throw new ValidationException("Имя предмета не должно быть пустым");
-        }
-        if (item.getDescription() == null || item.getDescription().isBlank()) {
-            throw new ValidationException("Описание предмета не должно быть пустым");
-        }
-        if (item.getAvailable() == null) {
-            throw new ValidationException("Доступность предмета должна быть указана");
-        }
-    }
+
 
     private List<OutputItemDto> itemEnrichment(List<OutputItemDto> outputItemDtos, boolean isOwner) {
         Map<Integer, OutputItemDto> itemDtos = outputItemDtos.stream().collect(Collectors.toMap(OutputItemDto::getId, Function.identity()));

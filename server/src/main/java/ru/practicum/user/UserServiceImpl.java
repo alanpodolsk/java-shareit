@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUser(Integer id) {
         Optional<User> user = userRepository.findById(id);
-        if (!user.isEmpty()) {
+        if (user.isPresent()) {
             return UserMapper.toUserDto(user.get());
         } else {
             throw new NoObjectException("Пользователь не найден в системе");
@@ -43,11 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        if (userDto != null) {
             return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
-        } else {
-            throw new NoObjectException("Объект пользователя не может быть null");
-        }
     }
 
     @Override
@@ -57,9 +53,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto, Integer id) {
-        if (userDto != null) {
             Optional<User> userOpt = userRepository.findById(id);
-            if (!userOpt.isEmpty()) {
+            if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 if (userDto.getName() != null) {
                     user.setName(userDto.getName());
@@ -71,9 +66,7 @@ public class UserServiceImpl implements UserService {
             } else {
                 throw new NoObjectException("Пользователя с данным id не существует в программе");
             }
-        } else {
-            throw new NoObjectException("Объект пользователя не может быть null");
-        }
+
     }
 
 

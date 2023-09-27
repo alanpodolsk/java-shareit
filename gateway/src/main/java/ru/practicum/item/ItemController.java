@@ -1,6 +1,7 @@
 package ru.practicum.item;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.Create;
@@ -11,43 +12,40 @@ import ru.practicum.item.model.Comment;
 
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/items")
 @AllArgsConstructor
 public class ItemController {
-    private final ItemService itemService;
+    private final ItemClient itemClient;
 
     @PostMapping
-    public OutputItemDto createItem(@RequestBody  @Validated(Create.class) InputItemDto inputItemDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return itemService.createItem(inputItemDto, userId);
+    public ResponseEntity<Object> createItem(@RequestBody  @Validated(Create.class) InputItemDto inputItemDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemClient.createItem(inputItemDto, userId);
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentDto createComment(@RequestBody Comment comment, @RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer itemId) {
-        return itemService.createComment(comment, userId, itemId);
+    public ResponseEntity<Object> createComment(@RequestBody Comment comment, @RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer itemId) {
+        return itemClient.createComment(comment, userId, itemId);
     }
 
     @PatchMapping("/{itemId}")
-    public OutputItemDto updateItem(@RequestBody InputItemDto inputItemDto, @RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer itemId) {
-        return itemService.updateItem(inputItemDto, userId, itemId);
+    public ResponseEntity<Object> updateItem(@RequestBody InputItemDto inputItemDto, @RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer itemId) {
+        return itemClient.updateItem(inputItemDto, userId, itemId);
     }
 
     @GetMapping("/{itemId}")
-    public OutputItemDto getItem(@PathVariable Integer itemId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return itemService.getItem(itemId, userId);
+    public ResponseEntity<Object> getItem(@PathVariable Integer itemId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemClient.getItem(itemId, userId);
     }
 
     @GetMapping
-    public List<OutputItemDto> getItemsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId, @RequestParam (defaultValue = "0") Integer from, @RequestParam (defaultValue = "50") Integer size) {
-        return itemService.getItemsByUser(userId, from, size);
+    public ResponseEntity<Object> getItemsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId, @RequestParam (defaultValue = "0") Integer from, @RequestParam (defaultValue = "50") Integer size) {
+        return itemClient.getItemsByUser(userId, from, size);
 
     }
 
     @GetMapping("/search")
-    public List<OutputItemDto> getItemsBySearch(@RequestParam(defaultValue = "") String text, @RequestParam (defaultValue = "0") Integer from, @RequestParam (defaultValue = "50") Integer size) {
-        return itemService.getItemsBySearch(text, from, size);
+    public ResponseEntity<Object> getItemsBySearch(@RequestParam(defaultValue = "") String text, @RequestParam (defaultValue = "0") Integer from, @RequestParam (defaultValue = "50") Integer size) {
+        return itemClient.getItemsBySearch(text, from, size);
     }
 }

@@ -21,7 +21,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public OutputItemDto createItem(@RequestBody  @Validated(Create.class) InputItemDto inputItemDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public OutputItemDto createItem(@RequestBody @Validated(Create.class) InputItemDto inputItemDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemService.createItem(inputItemDto, userId);
     }
 
@@ -41,13 +41,13 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<OutputItemDto> getItemsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId, @RequestParam (defaultValue = "0") Integer from, @RequestParam (defaultValue = "50") Integer size) {
+    public List<OutputItemDto> getItemsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId, @RequestParam(defaultValue = "0") Integer from, @RequestParam(defaultValue = "50") Integer size) {
         return itemService.getItemsByUser(userId, from, size);
 
     }
 
     @GetMapping("/search")
-    public List<OutputItemDto> getItemsBySearch(@RequestParam(defaultValue = "") String text, @RequestParam (defaultValue = "0") Integer from, @RequestParam (defaultValue = "50") Integer size) {
+    public List<OutputItemDto> getItemsBySearch(@RequestParam(defaultValue = "") String text, @RequestParam(defaultValue = "0") Integer from, @RequestParam(defaultValue = "50") Integer size) {
         return itemService.getItemsBySearch(text, from, size);
     }
 }

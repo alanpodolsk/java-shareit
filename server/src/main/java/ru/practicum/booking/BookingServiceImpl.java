@@ -33,9 +33,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto createBooking(BookingDtoForCreate bookingDto, Integer userId) {
-        if (bookingDto == null) {
-            throw new NoObjectException("Не передан объект бронирования");
-        }
+
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             throw new NoObjectException("Пользователь не найден в системе");
@@ -49,7 +47,6 @@ public class BookingServiceImpl implements BookingService {
             throw new NoObjectException("Это ваша собственная вещь");
         }
         Booking booking = BookingMapper.toBooking(bookingDto);
-        checkBookingDates(LocalDate.now().atStartOfDay(), booking);
         booking.setItem(itemOpt.get());
         booking.setBooker(userOpt.get());
         booking.setStatus(BookingStatus.WAITING);
@@ -95,21 +92,10 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getBookingsByUser(Integer userId, String state, Integer start, Integer size) {
-        if (size < 1 || start < 0) {
-            throw new ValidationException("Некорректные параметры пагинации");
-        }
-        if (userId == null) {
-            throw new NoObjectException("Не передан ID пользователя");
-        } else if (userRepository.findById(userId).isEmpty()) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new NoObjectException("Указан некорректный пользователь");
         }
-        BookingStateStatus enumState;
-        try {
-            enumState = Enum.valueOf(BookingStateStatus.class, state);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Unknown state: " + state);
-        }
-        switch (enumState) {
+        switch (Enum.valueOf(BookingStateStatus.class,state)){
             case ALL:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerId(userId, PageRequest.of(start > 0 ? start / size : 0, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             case WAITING:
@@ -129,12 +115,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getBookingsByUsersItems(Integer userId, String state, Integer start, Integer size) {
-        if (size < 1 || start < 0) {
-            throw new ValidationException("Некорректные параметры пагинации");
-        }
-        if (userId == null) {
-            throw new NoObjectException("Не передан ID пользователя");
-        } else if (userRepository.findById(userId).isEmpty()) {
+        if (userRepository.findById(userId).isEmpty()) {
             throw new NoObjectException("Указан некорректный пользователь");
         }
         List<Item> userItems = itemRepository.findByOwnerIdOrderByIdAsc(userId);
@@ -142,13 +123,8 @@ public class BookingServiceImpl implements BookingService {
         for (Item item : userItems) {
             itemIds.add(item.getId());
         }
-        BookingStateStatus enumState;
-        try {
-            enumState = Enum.valueOf(BookingStateStatus.class, state);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Unknown state: " + state);
-        }
-        switch (enumState) {
+
+        switch (Enum.valueOf(BookingStateStatus.class,state)) {
             case ALL:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdIn(itemIds, PageRequest.of(start > 0 ? start / size : 0, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             case WAITING:
@@ -163,19 +139,6 @@ public class BookingServiceImpl implements BookingService {
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdInAndStartIsBeforeAndEndIsAfter(itemIds, LocalDateTime.now(), LocalDateTime.now(), PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             default:
                 return null;
-        }
-    }
-
-    private void checkBookingDates(LocalDateTime checkTime, Booking booking) {
-        if (booking.getEnd() == null || booking.getStart() == null) {
-            throw new ValidationException("Даты бронирования должны быть заполнены");
-        }
-        if (booking.getStart().isBefore(checkTime) || booking.getEnd().isBefore(checkTime)) {
-            throw new ValidationException("Даты бронирования должны быть позже, чем время проверки");
-        } else if (booking.getStart().equals(booking.getEnd())) {
-            throw new ValidationException(("Бронирование должно длиться хотя бы 1 секунду"));
-        } else if (booking.getEnd().isBefore(booking.getStart())) {
-            throw new ValidationException("Окончание бронирования должно быть позже старта бронирования");
         }
     }
 }
