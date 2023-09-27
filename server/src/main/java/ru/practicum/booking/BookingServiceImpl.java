@@ -96,7 +96,7 @@ public class BookingServiceImpl implements BookingService {
         }
         switch (Enum.valueOf(BookingStateStatus.class, state)) {
             case ALL:
-                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerId(userId, PageRequest.of(start / size, size, Sort.by(Sort.Direction.ASC, "start"))).getContent());
+                return BookingMapper.toBookingDtoList(bookingRepository.findByBookerId(userId, PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             case WAITING:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.WAITING, PageRequest.of(start / size, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             case REJECTED:

@@ -180,8 +180,8 @@ class ShareItTests {
 
         //Assert
         Assertions.assertAll(
-                () -> assertEquals(savedBooking3.getId(), ownBookings.get(1).getId()),
-                () -> assertEquals(savedBooking1.getId(), ownBookings.get(0).getId())
+                () -> assertEquals(savedBooking3.getId(), ownBookings.get(0).getId()),
+                () -> assertEquals(savedBooking1.getId(), ownBookings.get(1).getId())
         );
     }
 
