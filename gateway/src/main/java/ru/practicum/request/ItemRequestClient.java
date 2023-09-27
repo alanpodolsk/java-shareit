@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.request.dto.ItemRequestDto;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -32,24 +31,24 @@ public class ItemRequestClient extends BaseClient {
 
     public ResponseEntity<Object> createRequest(@RequestBody ItemRequestDto itemRequestDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
         ItemRequestValidations.validateCreateRequest(itemRequestDto, userId);
-        return post("",userId,itemRequestDto);
+        return post("", userId, itemRequestDto);
     }
 
 
     public ResponseEntity<Object> getRequestsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         ItemRequestValidations.validateGetRequestsByUser(userId);
-        return get("",userId);
+        return get("", userId);
     }
 
 
     public ResponseEntity<Object> getAllRequests(@RequestParam(defaultValue = "0") Integer from, @RequestParam(defaultValue = "10") Integer size, @RequestHeader("X-Sharer-User-Id") Integer userId) {
         ItemRequestValidations.validateGetAllRequests(from, size, userId);
-        return get("/all?from={from}&size={size}", Long.valueOf(userId), Map.of("from",from,"size",size));
+        return get("/all?from={from}&size={size}", Long.valueOf(userId), Map.of("from", from, "size", size));
     }
 
 
     public ResponseEntity<Object> getRequest(@PathVariable Integer requestId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
         ItemRequestValidations.validateGetRequest(requestId, userId);
-        return get("/"+requestId,userId);
+        return get("/" + requestId, userId);
     }
 }

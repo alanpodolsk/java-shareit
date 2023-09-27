@@ -17,7 +17,6 @@ import ru.practicum.item.model.Item;
 import ru.practicum.user.UserRepository;
 import ru.practicum.user.model.User;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +94,7 @@ public class BookingServiceImpl implements BookingService {
         if (userRepository.findById(userId).isEmpty()) {
             throw new NoObjectException("Указан некорректный пользователь");
         }
-        switch (Enum.valueOf(BookingStateStatus.class,state)){
+        switch (Enum.valueOf(BookingStateStatus.class, state)) {
             case ALL:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByBookerId(userId, PageRequest.of(start > 0 ? start / size : 0, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             case WAITING:
@@ -124,7 +123,7 @@ public class BookingServiceImpl implements BookingService {
             itemIds.add(item.getId());
         }
 
-        switch (Enum.valueOf(BookingStateStatus.class,state)) {
+        switch (Enum.valueOf(BookingStateStatus.class, state)) {
             case ALL:
                 return BookingMapper.toBookingDtoList(bookingRepository.findByItemIdIn(itemIds, PageRequest.of(start > 0 ? start / size : 0, size, Sort.by(Sort.Direction.DESC, "start"))).getContent());
             case WAITING:

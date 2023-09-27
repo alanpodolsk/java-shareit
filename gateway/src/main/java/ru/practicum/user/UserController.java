@@ -2,12 +2,9 @@ package ru.practicum.user;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.Create;
 import ru.practicum.user.dto.UserDto;
 
-import java.util.List;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -32,7 +29,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> createUser(@RequestBody @Validated(Create.class) UserDto user) {
+    public ResponseEntity<Object> createUser(@RequestBody UserDto user) {
         return userClient.createUser(user);
     }
 

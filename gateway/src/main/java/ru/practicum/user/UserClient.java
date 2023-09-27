@@ -27,7 +27,7 @@ public class UserClient extends BaseClient {
 
     public ResponseEntity<Object> getUser(Integer id) {
         UserValidations.validateGetUser(id);
-        return get("/"+id);
+        return get("/" + id);
     }
 
 
@@ -38,17 +38,17 @@ public class UserClient extends BaseClient {
 
     public ResponseEntity<Object> updateUser(UserDto userDto, Integer id) {
         UserValidations.validateUpdateUser(userDto, id);
-        return patch("/"+id,userDto);
+        return patch("/" + id, userDto);
     }
 
 
     public ResponseEntity<Object> createUser(UserDto user) {
         UserValidations.validateCreateUser(user);
-        return post("",user);
+        return post("", user);
     }
 
     public void deleteUser(Integer id) {
         UserValidations.validateGetUser(id);
-        delete("/"+id);
+        delete("/" + id);
     }
 }

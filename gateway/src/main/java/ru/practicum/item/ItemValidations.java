@@ -2,9 +2,8 @@ package ru.practicum.item;
 
 import ru.practicum.exception.NoObjectException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.item.dto.CommentDto;
 import ru.practicum.item.dto.InputItemDto;
-import ru.practicum.item.model.Comment;
-import ru.practicum.item.model.Item;
 
 public class ItemValidations {
     public static void validateCreateItem(InputItemDto inputItemDto, Integer userId) {
@@ -41,8 +40,8 @@ public class ItemValidations {
         }
     }
 
-    public static void validateCreateComment(Comment comment, Integer userId, Integer itemId){
-        if(comment == null || comment.getText().isBlank() || userId == null || itemId == null){
+    public static void validateCreateComment(CommentDto comment, Integer userId, Integer itemId) {
+        if (comment == null || comment.getText().isBlank() || userId == null || itemId == null) {
             throw new ValidationException("Некорректное заполнение параметров запроса");
         }
     }

@@ -9,20 +9,20 @@ import java.time.LocalDateTime;
 
 public class BookingValidations {
 
-    public static void validateCreateBooking(BookingDtoForCreate bookingDto, Integer userId){
+    public static void validateCreateBooking(BookingDtoForCreate bookingDto, Integer userId) {
         if (bookingDto == null || userId == null) {
             throw new NoObjectException("Некорректно заполнены входные параметры");
         }
         checkBookingDates(LocalDateTime.now(), bookingDto);
     }
 
-    public static void validateSetBookingStatus(Integer id, boolean approved, Integer userId){
-        if(id == null  | userId == null){
+    public static void validateSetBookingStatus(Integer id, boolean approved, Integer userId) {
+        if (id == null | userId == null) {
             throw new NoObjectException("Некорректно заполнены входные параметры");
         }
     }
 
-    public static void validateGetBookings(Integer userId, String state, Integer start, Integer size){
+    public static void validateGetBookings(Integer userId, String state, Integer start, Integer size) {
         if (size < 1 || start < 0) {
             throw new ValidationException("Некорректные параметры пагинации");
         }
