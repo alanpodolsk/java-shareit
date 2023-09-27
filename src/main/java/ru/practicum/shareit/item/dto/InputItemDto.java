@@ -3,9 +3,6 @@ package ru.practicum.shareit.item.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.Create;
-import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -13,16 +10,15 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemDto {
+public class InputItemDto {
     Integer id;
-    @NotBlank(groups = {Create.class})
+    @NotBlank
     String name;
-    @NotBlank(groups = {Create.class})
+    @NotBlank
     String description;
-    @NotNull(groups = {Create.class})
+    @NotNull
     Boolean available;
-    User owner;
-    ItemRequest request;
+    Integer requestId;
 
 
 }

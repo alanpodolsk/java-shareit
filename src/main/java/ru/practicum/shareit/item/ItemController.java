@@ -5,8 +5,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.Create;
 import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.InputItemDto;
+import ru.practicum.shareit.item.dto.OutputItemDto;
 import ru.practicum.shareit.item.model.Comment;
 
 import java.util.List;
@@ -21,8 +21,8 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto createItem(@RequestBody  @Validated(Create.class) ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return itemService.createItem(itemDto, userId);
+    public OutputItemDto createItem(@RequestBody  @Validated(Create.class) InputItemDto inputItemDto, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemService.createItem(inputItemDto, userId);
     }
 
     @PostMapping("/{itemId}/comment")
@@ -31,23 +31,23 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer itemId) {
-        return itemService.updateItem(itemDto, userId, itemId);
+    public OutputItemDto updateItem(@RequestBody InputItemDto inputItemDto, @RequestHeader("X-Sharer-User-Id") Integer userId, @PathVariable Integer itemId) {
+        return itemService.updateItem(inputItemDto, userId, itemId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDtoWithBooking getItem(@PathVariable Integer itemId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public OutputItemDto getItem(@PathVariable Integer itemId, @RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemService.getItem(itemId, userId);
     }
 
     @GetMapping
-    public List<ItemDtoWithBooking> getItemsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        return itemService.getItemsByUser(userId);
+    public List<OutputItemDto> getItemsByUser(@RequestHeader("X-Sharer-User-Id") Integer userId, @RequestParam (defaultValue = "0") Integer from, @RequestParam (defaultValue = "50") Integer size) {
+        return itemService.getItemsByUser(userId, from, size);
 
     }
 
     @GetMapping("/search")
-    public List<ItemDto> getItemsBySearch(@RequestParam(defaultValue = "") String text) {
-        return itemService.getItemsBySearch(text);
+    public List<OutputItemDto> getItemsBySearch(@RequestParam(defaultValue = "") String text, @RequestParam (defaultValue = "0") Integer from, @RequestParam (defaultValue = "50") Integer size) {
+        return itemService.getItemsBySearch(text, from, size);
     }
 }

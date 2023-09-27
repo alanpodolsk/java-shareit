@@ -2,44 +2,45 @@ package ru.practicum.shareit.item.dto;
 
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ItemMapper {
-    public static ItemDto toItemDto(Item item) {
-        return new ItemDto(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getOwner(),
-                item.getRequest()
-        );
-    }
 
-    public static ItemDtoWithBooking toItemDtoWithBooking(Item item) {
-        return new ItemDtoWithBooking(
+
+    public static OutputItemDto toOutputItemDto(Item item) {
+        Integer requestId = null;
+        if (item.getRequest() != null) {
+            requestId = item.getRequest().getId();
+        }
+        UserDto owner = null;
+        if (item.getOwner() != null) {
+            owner = UserMapper.toUserDto(item.getOwner());
+        }
+        return new OutputItemDto(
                 item.getId(),
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable(),
-                item.getOwner(),
-                item.getRequest(),
+                owner,
+                requestId,
                 null,
                 null,
                 new ArrayList<>()
         );
     }
 
-    public static Item toItem(ItemDto itemDto) {
+    public static Item toItem(InputItemDto inputItemDto) {
         return new Item(
-                itemDto.getId(),
-                itemDto.getName(),
-                itemDto.getDescription(),
-                itemDto.getAvailable(),
-                itemDto.getOwner(),
-                itemDto.getRequest()
+                inputItemDto.getId(),
+                inputItemDto.getName(),
+                inputItemDto.getDescription(),
+                inputItemDto.getAvailable(),
+                null,
+                null
         );
     }
 
@@ -47,7 +48,7 @@ public class ItemMapper {
         return new CommentDto(
                 comment.getId(),
                 comment.getText(),
-                comment.getItem(),
+                comment.getItem().getId(),
                 comment.getAuthor().getName(),
                 comment.getCreated());
     }
@@ -58,6 +59,14 @@ public class ItemMapper {
             commentDtos.add(ItemMapper.toCommentDto(comment));
         }
         return commentDtos;
+    }
+
+    public static List<OutputItemDto> toOutputItemDtos(List<Item> items) {
+        List<OutputItemDto> outputItemDtos = new ArrayList<>();
+        for (Item item : items) {
+            outputItemDtos.add(ItemMapper.toOutputItemDto(item));
+        }
+        return outputItemDtos;
     }
 
 }
